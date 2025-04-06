@@ -3,47 +3,44 @@ import { useNavigate } from "react-router-dom";
 import "../styles/Navbar.css";
 import userIcon from "../assets/icons8-user-50-2.png";
 import projectIcon from "../assets/project.png";
-import { uploadRegmap, fetchCustomers,fetchModes,fetchProjectById, fetchSettings, fetchCustomerById } from "../services/api";
-// import AddCustomerModal from "./AddCustomerModal";
-// import AddModeModal from "./AddModeModal";
-// import AddMkclTableModal from "./AddMkclTableModal";
-
-const Navbar = () => {
+import { uploadRegmap, fetchCustomers,fetchModes,fetchProjectById,fetchSettings, fetchCustomerById } from "../services/api";
+import AddCustomerModal from "./AddCustomerModal";
+import AddModeModal from "./AddModeModal";
+import AddMkclTableModal from "./AddMkclTableModal";
+const Navbar = ({selectedModes,setSelectedModes}) => {
     const navigate = useNavigate();
     const user = JSON.parse(localStorage.getItem("user"));
     const projectName = localStorage.getItem("projectName") || "No Project Selected";
     const projectId = localStorage.getItem("projectId");
 
-    const [selectedModes, setSelectedModes] = useState([]);
-    
+   // const [selectedModes, setSelectedModes] = useState([]);
+    const [valueType, setValueType] = useState("hex");
     const [selectedFile, setSelectedFile] = useState(null);
     const [message, setMessage] = useState("");
     const [customers, setCustomers] = useState([]); // Store customers list
     const [selectedCustomer, setSelectedCustomer] = useState(""); // Store selected customer
-    const [selectedCustomerName, setSelectedCustomerName] = useState(""); // Store selected customer
-    // const [isModalOpen, setModalOpen] = useState(false);
+    const [isModalOpen, setModalOpen] = useState(false);
     const [showAlert, setShowAlert] = useState(false); // Control alert display
     const [modes, setModes] = useState([]);
-    // const [isModeModalOpen, setModeModalOpen] = useState(false);
+    const [isModeModalOpen, setModeModalOpen] = useState(false);
     const [projectDetails, setProjectDetails] = useState(null);
     const [uniqueVariables, setUniqueVariables] = useState([]);
     const [mkclTables, setMkclTables] = useState([]);
     const [selectedMkclTables, setSelectedMkclTables] = useState([]);
-    // const [ismkclModalOpen, setmkclModalOpen] = useState(false);
+    const [ismkclModalOpen, setmkclModalOpen] = useState(false);
 
     const toggleSelection = (item, setSelected) => {
         setSelected((prev) =>
             prev.includes(item) ? prev.filter((i) => i !== item) : [...prev, item]
         );
     };
-
     const toggleSelectiontable = (tableName) => {
-        setSelectedMkclTables((prev) => 
-        prev.includes(tableName)
-    ? prev.filter((i) => i !== tableName)
-    : [...prev, tableName]
-    );
-    };
+        setSelectedMkclTables((prev) =>
+          prev.includes(tableName)
+            ? prev.filter((t) => t !== tableName)
+            : [...prev, tableName]
+        );
+      };
       
     const handleLogout = () => {
         ["token", "user", "projectId", "projectName"].forEach(item => localStorage.removeItem(item));
@@ -106,14 +103,9 @@ const Navbar = () => {
     const handleCustomerChange = (event) => {
         event.preventDefault();
         setSelectedCustomer(event.target.value);
-        const customerName = customers.find(
-            (customer) => customer.customerId === parseInt(event.target.value)
-        ).name;
-
-        setSelectedCustomerName(customerName);
         setModes([]); // Clear previous modes
         setSelectedModes([]);
-        // console.log("Selected customer:",selectedCustomer);
+        console.log("Selected customer:",selectedCustomer);
     };
     useEffect(() => {
       if (selectedCustomer) {
@@ -176,7 +168,7 @@ const Navbar = () => {
       setUniqueVariables([...variables]);
 
        // Convert Set to Array
-    //    console.log("Unique Variables:", uniqueVariables); // Log unique variables
+        console.log("Unique Variables:", uniqueVariables); // Log unique variables
   };
   useEffect(() => {
     if(uniqueVariables.length)
@@ -184,14 +176,14 @@ const Navbar = () => {
   }, [uniqueVariables]);
 
   const fetchTables = async () => {
-    try{
-        const data = await fetchSettings(selectedCustomer);
-        setMkclTables(data);
-        setSelectedMkclTables([]);
-    }catch (error){
-        console.error("Failed to fetch tables:", error);
+    try {
+      const data = await fetchSettings(selectedCustomer);
+      setMkclTables(data);
+      setSelectedMkclTables([]); // Reset selection on customer change
+    } catch (error) {
+      console.error("Error fetching MKCL tables:", error);
     }
-  }
+  };
 
     return (
         <nav className="navbar">
@@ -224,17 +216,19 @@ const Navbar = () => {
                             </option>
                         ))}
                     </select>
-                    {/*<button className="nav-btn" onClick={() => setModalOpen(true)}>Add Customer</button>
+                    <button className="nav-btn" onClick={() => setModalOpen(true)}>Add Customer</button>
                     <AddCustomerModal 
                         isOpen={isModalOpen} 
                         onClose={() => {
                             setModalOpen(false);
                             fetchCustomersList(projectId);  // Fetch updated customers after modal closes
                         }} 
-                    />*/}
+                    />
                     <button className="nav-btn">Edit</button>
                     <button className="nav-btn">Save to DB</button>
-                    <button className="nav-btn">Create Setfile</button>
+                    <button className="nav-btn" onClick={() => navigate('/create-setfile')}>
+                      Create Setfile
+                    </button>
                     <button className="nav-btn" onClick={handleLogout}>Logout</button>
                 </div>
             </div>
@@ -250,58 +244,53 @@ const Navbar = () => {
               <input
                 type="checkbox"
                 value={mode.id}
-                checked={selectedModes.includes(mode.id)}
-                onChange={() => handleModeSelection(mode.id)}
+                checked={selectedModes.includes(mode)}
+                onChange={() => handleModeSelection(mode)}
               />
               {mode.name}
             </label>
           ))}
-          {/* <button className="nav-btn" onClick={() => setModeModalOpen(true)}>Add Mode</button> */}
+          <button className="nav-btn" onClick={() => setModeModalOpen(true)}>Add Mode</button>
         </div>
 
-        {/* <AddModeModal
+        <AddModeModal
           isOpen={isModeModalOpen}
           onClose={() => setModeModalOpen(false)}
           customerId={selectedCustomer}
           refreshModes={() => fetchModesList(selectedCustomer)}
-        /> */}
+        />
       </div>
                 {/* MKCL Table Selection */}
                 <div className="mkcl-section">
-                    <h3>MKCL TABLES:</h3>
-                    <div className="radio-container">
-                        {mkclTables.map((table) => (
-                            <label key={table} className="radio-label">
-                                <input
-                                    type="checkbox"
-                                    checked={selectedMkclTables.includes(table.table_name)}
-                                    onChange={() => toggleSelection(table.table_name)}
-                                />
-                                {table.name}
-                            </label>
-                        ))}
-                        {/* <button className="nav-btn">Add MKCL Table</button> */}
-                    </div>
-                </div>
+        <h3>MKCL TABLES:</h3>
+        <div className="radio-container">
+          {mkclTables.map((table) => (
+            <label key={table.table_name} className="radio-label">
+              <input
+                type="checkbox"
+                value={table.table_name}
+                checked={selectedMkclTables.includes(table)}
+                onChange={() => toggleSelectiontable(table)}
+              />
+              {table.name}
+            </label>
+          ))}
+          <button className="nav-btn" onClick={() => setmkclModalOpen(true)}>Add MKCL Table</button>
+        </div>
+      </div>
+
+      <AddMkclTableModal
+        isOpen={ismkclModalOpen}
+        onClose={() => setmkclModalOpen(false)}
+        projectName={projectName}
+        customerName={selectedCustomer}
+        customerId={selectedCustomer}
+        uniqueArray1={uniqueVariables}
+        refreshModes={() => fetchTables(selectedCustomer)}
+      />
 
                 {/* Value Type Selection */}
-                {/* <div className="value-section">
-                    <h3>VALUE:</h3>
-                    <div className="radio-container">
-                        {['hex', 'dec'].map((type) => (
-                            <label key={type} className="radio-label">
-                                <input
-                                    type="radio"
-                                    name="valueType"
-                                    value={type}
-                                    checked={valueType === type}
-                                    onChange={() => setValueType(type)}
-                                />
-                                {type.toUpperCase()}
-                            </label>
-                        ))}
-                    </div>
-                </div> */}
+                
             </div>
         </nav>
     );

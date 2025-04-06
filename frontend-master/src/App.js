@@ -4,6 +4,7 @@ import Login from "./components/Login";
 import CreateProject from "./components/CreateProject";
 import Dashboard from "./components/Dashboard";
 import ProtectedRoute from "./components/ProtectedRoute";
+import CreateNewSetfile from "./components/CreateNewSetfile";
 
 const AuthRoute = ({ children }) => {
   const isAuth = localStorage.getItem("token") !== null;
@@ -21,6 +22,7 @@ function App() {
         <Route element={<ProtectedRoute />}>
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/create-project" element={<CreateProject />} />
+          <Route path="/create-setfile" element={<CreateNewSetfile />} />
         </Route>
       </Routes>
     </Router>

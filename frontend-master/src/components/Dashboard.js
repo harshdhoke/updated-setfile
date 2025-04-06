@@ -7,53 +7,42 @@ import "../styles/Dashboard.css";
 
 const Dashboard = () => {
   const [showGlobal, setShowGlobal] = useState(true);
-  const [showFileList, setShowFileList] = useState(true);
   const [selectedCustomer, setSelectedCustomer] = useState(null);
-  const [selectedMode, setSelectedMode] = useState(null);
-  const [selectedFile, setSelectedFile] = useState(null);
-
-  // Combine dynamic class names
-  const containerClass = `dashboard-container 
-    ${!showGlobal ? "expanded" : ""} 
-    ${!showFileList ? "expanded-filelist" : ""}`.trim();
+  const [selectedModes, setSelectedModes] = useState(null);
+  const [selectedSetFiles, setSelectedSetFiles] = useState({});
+  
 
   return (
     <div>
-      {/* Navbar with props */}
+      {/* Pass data and handlers to Navbar */}
       <Navbar
-        selectedCustomer={selectedCustomer}
-        setSelectedCustomer={setSelectedCustomer}
-        selectedMode={selectedMode}
-        setSelectedMode={setSelectedMode}
-        selectedFile={selectedFile}
+        selectedModes={selectedModes}
+        setSelectedModes={setSelectedModes}
+       
       />
 
-      <div className={containerClass}>
-        {/* File Data Table Section */}
+      <div className={`dashboard-container ${showGlobal ? "" : "expanded"}`}>
+        {/* Editable File Data Table */}
         <div className="section data-table">
           <h2>File Data Table</h2>
-          <FileDataTable selectedFile={selectedFile} />
+          <FileDataTable  selectedSetFiles={selectedSetFiles} />
         </div>
 
-        {/* File List Section */}
-        {showFileList && (
-          <div className="section file-list">
-            <button
-              className="toggle-btn hide-btn filelist"
-              onClick={() => setShowFileList(false)}
-            >
-              <span className="toggle-icon">−</span>
-            </button>
-            <h2>Available Files</h2>
-            <FileList setSelectedFile={setSelectedFile} />
-          </div>
-        )}
+        {/* File List */}
+        <div className="section file-list">
+          <h2>Available Files</h2>
+          <FileList
+          selectedModes={selectedModes}
+          selectedSetFiles={selectedSetFiles}
+          setSelectedSetFiles={setSelectedSetFiles}
+        />
+        </div>
 
-        {/* Global File Section */}
+        {/* Global Data Section */}
         {showGlobal && (
           <div className="section global-data">
             <button
-              className="toggle-btn hide-btn global"
+              className="toggle-btn hide-btn"
               onClick={() => setShowGlobal(false)}
             >
               <span className="toggle-icon">−</span>
@@ -61,27 +50,17 @@ const Dashboard = () => {
             <GlobalFile />
           </div>
         )}
+
+        {/* Show Button when Global Data is Hidden */}
+        {!showGlobal && (
+          <button
+            className="toggle-btn show-btn inside"
+            onClick={() => setShowGlobal(true)}
+          >
+            <span className="toggle-icon">+</span>
+          </button>
+        )}
       </div>
-
-      {/* Show File List Button */}
-      {!showFileList && (
-        <button
-          className="show-btn-filelist"
-          onClick={() => setShowFileList(true)}
-        >
-          +
-        </button>
-      )}
-
-      {/* Show Global File Button */}
-      {!showGlobal && (
-        <button
-          className="show-btn-global"
-          onClick={() => setShowGlobal(true)}
-        >
-          +
-        </button>
-      )}
     </div>
   );
 };
