@@ -19,7 +19,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(fileUpload());
 
 // Serve uploaded files statically
-app.use("/uploads", express.static("C:\\Users\\DELL\\Desktop\\regmap"));
+app.use("/uploads", express.static("C:\\Users\\ziya.rk\\Desktop\\remap"));
 
 app.use("/auth", authRoutes);
 app.use("/projects", projectRoutes);

@@ -2,8 +2,8 @@ body, html {
   margin: 0;
   padding: 0;
   height: 100%;
-  overflow-x: hidden;
-  overflow-y: auto;
+  /* overflow-x: hidden;
+  overflow-y: auto; */
 }
 
 /* Main dashboard layout */
@@ -17,7 +17,6 @@ body, html {
   height: 100%;
   box-sizing: border-box;
   flex-wrap: wrap;
-  box-sizing: border-box;
 }
 
 /* Default layout: each section gets equal space */
@@ -33,6 +32,9 @@ body, html {
   overflow: auto;
 }
 
+.data-table{
+  overflow-y: hidden;
+}
 /* When Global is hidden */
 .dashboard-container.expanded .data-table {
   flex: 2;
@@ -70,7 +72,7 @@ body, html {
 /* ======= HIDE BUTTONS ======== */
 /* ============================= */
 
-.toggle-btn {
+.toggle-btn.global {
   display: flex;
   justify-content: center;
   align-items: center;
@@ -86,8 +88,28 @@ body, html {
   transition: background 0.3s ease;
   position: relative;
 }
-.toggle-btn:hover {
+.toggle-btn.global:hover {
   background: #0056b3;
+}
+
+.toggle-btn.filelist {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 40px;
+  height: 40px;
+  background: #28a745;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 20px;
+  font-weight: bold;
+  transition: background 0.3s ease;
+  position: relative;
+}
+.toggle-btn.filelist:hover {
+  background: #1e7e34;
 }
 
 /* Tooltip for Global Hide Button */
@@ -218,4 +240,14 @@ body, html {
 }
 .show-btn-filelist:hover::after {
   opacity: 1;
+}
+
+
+/* Dashboard.css */
+.sticky-navbar {
+  position: sticky;
+  top: 0; /* Adjust this value as needed */
+  background-color: #007bff; /* Optional: Set a background color */
+  z-index: 1000; /* Ensure it stays above other content */
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Optional: Add a shadow for better visibility */
 }

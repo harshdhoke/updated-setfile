@@ -154,7 +154,7 @@ export const addSetting = async (customerId, name, tableName, uniqueArray) => {
       name,
       table_name: tableName,
       uniqueArray1: uniqueArray
-    });
+    }, getAuthHeaders());
 
     return response.data;
   } catch (error) {
@@ -212,6 +212,101 @@ export const fetchTableData = async (tableName, columnName) => {
     return response.data;
   } catch (error) {
     console.error("Error fetching table data:", error);
+    throw error;
+  }
+};
+ 
+export const updateRowAPI = async (tableName, id, columnName, value,regmapEntry) => {
+  try {
+    const response = await axios.post(
+      `${API_BASE_URL}/setfile/update-row`,
+      { tableName, id, columnName, value,regmapEntry },
+      {
+        headers: { ...getAuthHeaders().headers },
+      }
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Error updating row:", error);
+    throw error;
+  }
+};
+
+export const addRowAPI = async (tableName, referenceId, position, rowData,defaultValue) => {
+  
+  try {
+    const response = await axios.post(
+      `${API_BASE_URL}/setfile/add-row`,
+      { tableName, referenceId, position, rowData,defaultValue },
+      {
+        headers: { ...getAuthHeaders().headers },
+      }
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Error adding row:", error);
+    throw error;
+  }
+};
+
+export const fetchRegmap = async (projectId) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/projects/regmap/${projectId}`, getAuthHeaders());
+    const fileBlob = await response.blob(); // Get the file as a Blob
+    const text = await fileBlob.text(); // Convert the Blob into text
+    //  console.log("Raw Text from Regmap:", text);
+
+    // Parse the text content
+    const lines = text.trim().split("\n");
+    const regex = /#define\s+(\w+)\s+0x([0-9A-Fa-f]+)\s+\/\/\s+0x([0-9A-Fa-f]+)\s/;
+    const data = {};
+
+    lines.forEach(line => {
+      const match = line.match(regex);
+      if (match) {
+        const [_, name, value, offset] = match;
+        data[name] = {
+          Address: value,
+          Value: offset
+        };
+      }
+    });
+
+    // console.log("Parsed Regmap Data:", data);
+    return data;
+
+  } catch (err) {
+    console.error("Error fetching or parsing regmap:", err);
+    return null;
+  }
+};
+
+
+export const deleteRowAPI = async (tableName, rowId) => {
+  try {
+    const response = await axios.post(
+      `${API_BASE_URL}/setfile/delete-row`,
+      { tableName, rowId },
+      {
+        headers: { ...getAuthHeaders().headers },
+      }
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Error deleting row:", error);
+    return { success: false };
+  }
+};
+export const markFileAsDeleted = async (file) => {
+  try {
+    const response = await axios.post(
+      `${API_BASE_URL}/setfile/mark-deleted`,
+      file,
+      { headers: { ...getAuthHeaders().headers } }
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Error marking file as deleted:", error);
     throw error;
   }
 };

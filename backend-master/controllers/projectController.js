@@ -82,7 +82,7 @@ exports.uploadRegmap = async (req, res) => {
     // **Step 2: Remove Existing `.regmap.h` Files**
     const files = fs.readdirSync(projectDir);
     files.forEach((file) => {
-      if (file.endsWith(".regmap.h.txt")) {
+      if (file.endsWith("RegsMap.h")) {
         fs.unlinkSync(path.join(projectDir, file));
       }
     });
@@ -142,5 +142,35 @@ exports.getProjectById = async (req, res) => {
   } catch (err) {
       console.error("Database error:", err);
       res.status(500).json({ message: "Database error", error: err.message });
+  }
+};
+
+exports.getRegmap = async (req, res) => {
+  try {
+    const { projectId } = req.params;
+
+    if (!projectId) {
+      return res.status(400).json({ message: "Project ID is required" });
+    }
+
+    // Get regmap path from DB
+    const [rows] = await pool.query(`SELECT regmap_path FROM project WHERE id = ?`, [projectId]);
+
+    if (!rows || rows.length === 0 || !rows[0].regmap_path) {
+      return res.status(404).json({ message: "Regmap path not found in database" });
+    }
+
+    const regmapPath = rows[0].regmap_path;
+
+    // Check if the file exists
+    if (!fs.existsSync(regmapPath)) {
+      return res.status(404).json({ message: "Regmap file not found on disk" });
+    }
+
+    // Send the file to the client
+    return res.sendFile(path.resolve(regmapPath));
+
+  } catch (err) {
+    return res.status(500).json({ message: "Error fetching regmap", error: err.message });
   }
 };

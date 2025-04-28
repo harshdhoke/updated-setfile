@@ -1,8 +1,8 @@
 import { useState } from "react";
-import { getCustomerById } from "../services/api";
+import { addSetting } from "../services/api";
 
 
-const AddMkclTableModal = ({ isOpen, onClose, projectName, customerName, customerId,uniqueArray1 }) => {
+const AddMkclTableModal = ({ isOpen, onClose, projectName, customerName, customerId,uniqueArray1,refreshModes }) => {
   const [interfaceType, setInterfaceType] = useState("cphy");
   const [clockRate, setClockRate] = useState("");
   console.log(projectName, customerName, customerId,uniqueArray1);
@@ -14,21 +14,11 @@ const AddMkclTableModal = ({ isOpen, onClose, projectName, customerName, custome
     }
 
     try {
-      // Fetch customer details
-      const data = await getCustomerById(customerId);
-      const updatedCustomerName = data;
-      console.log("up",updatedCustomerName);
-
-      // Construct table name
-    //   const tableName = `${projectName}_${updatedCustomerName}_${interfaceType}_${clockRate}`;
-    //   const settingData = {
-    //     customer_id: customerId,
-    //     name: `${interfaceType}_${clockRate}`,
-    //     table_name: tableName,
-    //   };
-
+      const tableName = `${projectName}_${customerName}_${interfaceType}_${clockRate}`;
+       const name= `${interfaceType}_${clockRate}`;
     //   // Add new setting to database
-    //   await addSetting(settingData);
+     await addSetting(customerId,name,tableName,uniqueArray1);
+     refreshModes(); // Refresh mode list
       onClose(); // Close modal after successful submission
     } catch (error) {
       console.error("Error handling MKCL Table addition:", error);
@@ -41,12 +31,12 @@ const AddMkclTableModal = ({ isOpen, onClose, projectName, customerName, custome
   return (
     <div className="modal-overlay">
       <div className="modal-content">
-        <h2>Add MKCL Table</h2>
+        <h2 className="h2">Add MIPI Datarate</h2>
 
         <div className="input-group">
-          <label>Interface Type:</label>
+          {/* <label className="radio-container">Interface Type:</label> */}
           <div>
-            <label>
+            <label className="radio-label h2">
               <input
                 type="radio"
                 value="cphy"
@@ -55,7 +45,7 @@ const AddMkclTableModal = ({ isOpen, onClose, projectName, customerName, custome
               />
               CPHY
             </label>
-            <label>
+            <label className="radio-label h2">
               <input
                 type="radio"
                 value="dphy"

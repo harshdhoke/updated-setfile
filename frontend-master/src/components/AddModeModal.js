@@ -53,7 +53,7 @@ const AddModeModal = ({ isOpen, onClose, customerId, refreshModes }) => {
     return (
         <div className="modal-overlay">
             <div className="modal-content">
-                <h2>Add Modes</h2>
+                <h2 className="h2">Add Modes</h2>
                 {modeInputs.map((mode, index) => (
                     <input
                         key={index}

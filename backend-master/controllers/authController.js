@@ -15,7 +15,8 @@ exports.loginUser = async (req, res) => {
     if (rows.length === 0) return res.status(400).json({ message: "User not found" });
 
     const user = rows[0];
-
+    console.log(password);
+    console.log(user.password);
     // Validate password
     const validPassword = await bcrypt.compare(password, user.password);
     if (!validPassword) return res.status(400).json({ message: "Invalid credentials" });
@@ -23,7 +24,7 @@ exports.loginUser = async (req, res) => {
     // Generate JWT token
     const token = jwt.sign({ userId: user.id, email: user.email }, process.env.JWT_SECRET, { expiresIn: "1h" });
 
-    res.json({ token, user: { name: user.name, email: user.email } });
+    res.json({ token, user: { name: user.username, email: user.email } });
   } catch (err) {
     console.error("Login error:", err);
     res.status(500).json({ message: "Server error" });

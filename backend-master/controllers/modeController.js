@@ -14,6 +14,7 @@ exports.getModesByCustomer = async (req, res) => {
   }
 };
 
+
 // Add a new mode for a customer
 exports.addMode = async (req, res) => {
   const { customer_id, name } = req.body;

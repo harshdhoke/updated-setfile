@@ -20,7 +20,6 @@ const CreateNewSetfileNavbar = ({ selectedModes, setSelectedModes }) => {
   const user = JSON.parse(localStorage.getItem("user"));
   const projectName = localStorage.getItem("projectName") || "No Project Selected";
   const projectId = localStorage.getItem("projectId");
-
   const [selectedFile, setSelectedFile] = useState(null);
   const [message, setMessage] = useState("");
   const [customers, setCustomers] = useState([]);
@@ -29,7 +28,7 @@ const CreateNewSetfileNavbar = ({ selectedModes, setSelectedModes }) => {
   const [isModalOpen, setModalOpen] = useState(false);
   const [showAlert, setShowAlert] = useState(false);
   const [modes, setModes] = useState([]);
-  const [selectedMode, setSelectedMode] = useState("");
+  // const [selectedMode, setSelectedMode] = useState("");
   const [isModeModalOpen, setModeModalOpen] = useState(false);
   const [mkclTables, setMkclTables] = useState([]);
   const [selectedMkclTable, setSelectedMkclTable] = useState("");
@@ -89,7 +88,9 @@ const CreateNewSetfileNavbar = ({ selectedModes, setSelectedModes }) => {
   const handleCustomerChange = (event) => {
     const selectedId = event.target.value;
     setSelectedCustomer(selectedId);
-    setSelectedMode("");
+    
+    localStorage.setItem("cus",selectedCustomer);
+    setSelectedModes("");
     setSelectedMkclTable("");
   };
 
@@ -117,7 +118,7 @@ const CreateNewSetfileNavbar = ({ selectedModes, setSelectedModes }) => {
     }
   }, [selectedCustomer]);
 
-  const generatedSetfileName = `${setfilePrefix || "prefix"}_${selectedCustomerName || "customer"}_${projectName}_${(modes.find(m => String(m.id) === String(selectedMode))?.name || "mode")}_${resolution || "res"}_${fps || "fps"}_${setfileSuffix || "suffix"}.nset`;
+  const generatedSetfileName = `${setfilePrefix || "prefix"}_${selectedCustomerName || "customer"}_${projectName}_${(modes.find(m => String(m.id) === String(selectedModes))?.name || "mode")}_${resolution || "res"}_${fps || "fps"}${setfileSuffix ? `_${setfileSuffix}` : ''}.nset`;
 
   return (
     <nav className="create-new-setfile-navbar">
@@ -126,10 +127,11 @@ const CreateNewSetfileNavbar = ({ selectedModes, setSelectedModes }) => {
           <img src={userIcon} alt="User Icon" className="create-new-setfile-icon" />
           <span>{user ? user.name : "Not Logged In"}</span>
           <img src={projectIcon} alt="Project Icon" className="create-new-setfile-icon" />
-          <h2>{projectName}</h2>
+          <h3>{projectName}</h3>
         </div>
 
         <div className="create-new-setfile-navbar-buttons">
+          <button className="create-new-setfile-btn" onClick={() => navigate('/dashboard')}>Go To Sensor Homepage</button>
           <label className="create-new-setfile-btn">
             Upload Regmap
             <input type="file" onChange={handleFileChange} style={{ display: "none" }} />
@@ -154,17 +156,19 @@ const CreateNewSetfileNavbar = ({ selectedModes, setSelectedModes }) => {
             }}
           />
 
-          <button className="create-new-setfile-btn">Edit</button>
+          {/* <button className="create-new-setfile-btn">Edit</button>
           <button className="create-new-setfile-btn">Save to DB</button>
-          <button className="create-new-setfile-btn" onClick={() => navigate('/create-setfile')}>Create Setfile</button>
+          <button className="create-new-setfile-btn" onClick={() => navigate('/create-setfile')}>Create Setfile</button> */}
           <button className="create-new-setfile-btn" onClick={handleLogout}>Logout</button>
         </div>
       </div>
 
+      <div className="combined">
       <div className="create-new-setfile-section">
         <div className="create-new-setfile-mode-row">
           <label className="create-new-setfile-label">Mode:</label>
-          <select className="create-new-setfile-select" value={selectedMode} onChange={(e) => setSelectedMode(e.target.value)}>
+          <select className="create-new-setfile-select" value={selectedModes} onChange={(e) => setSelectedModes(e.target.value) }>
+         <h2> selectedModes</h2>
             <option value="">Select Mode</option>
             {modes.map((mode) => (
               <option key={mode.id} value={mode.id}>{mode.name}</option>
@@ -184,12 +188,12 @@ const CreateNewSetfileNavbar = ({ selectedModes, setSelectedModes }) => {
         <div className="create-new-setfile-dropdown-row">
           <label className="create-new-setfile-label">MKCL Table:</label>
           <select className="create-new-setfile-select" value={selectedMkclTable} onChange={(e) => setSelectedMkclTable(e.target.value)}>
-            <option value="">Select MKCL Table</option>
+            <option value="">Select MIPI Datarate</option>
             {mkclTables.map((table) => (
               <option key={table.table_name} value={table.table_name}>{table.name}</option>
             ))}
           </select>
-          <button className="create-new-setfile-btn" onClick={() => setmkclModalOpen(true)}>Add MKCL Table</button>
+          <button className="create-new-setfile-btn" onClick={() => setmkclModalOpen(true)}>Add MIPI Datarate</button>
         </div>
         <AddMkclTableModal
           isOpen={ismkclModalOpen}
@@ -200,6 +204,7 @@ const CreateNewSetfileNavbar = ({ selectedModes, setSelectedModes }) => {
           uniqueArray1={[]}
           refreshModes={() => fetchSettings(selectedCustomer).then(setMkclTables)}
         />
+      </div>
       </div>
 
       <div className="create-new-setfile-section create-new-setfile-inputs">
@@ -212,16 +217,16 @@ const CreateNewSetfileNavbar = ({ selectedModes, setSelectedModes }) => {
         />
         <input
           type="text"
-          placeholder="FPS"
-          value={fps}
-          onChange={(e) => setFps(e.target.value)}
+          placeholder="Resolution"
+          value={resolution}
+          onChange={(e) => setResolution(e.target.value)}
           className="create-new-setfile-input"
         />
         <input
           type="text"
-          placeholder="Resolution"
-          value={resolution}
-          onChange={(e) => setResolution(e.target.value)}
+          placeholder="FPS"
+          value={fps}
+          onChange={(e) => setFps(e.target.value)}
           className="create-new-setfile-input"
         />
         <input
