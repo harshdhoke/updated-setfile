@@ -11,7 +11,14 @@ const Dashboard = () => {
   const [selectedCustomer, setSelectedCustomer] = useState(null);
   const [selectedModes, setSelectedModes] = useState(null);
   const [selectedSetFiles, setSelectedSetFiles] = useState({});
- 
+
+  const [globalData, setGlobalData] = useState({
+    tableData: [],
+    editedCells: {},
+    selectedFile: null,
+    fileName:"",
+    // Add other states you want to preserve
+  });
   return (
     <div >
       {/* Pass data and handlers to Navbar */}
@@ -59,27 +66,31 @@ const Dashboard = () => {
         )}
 
         {/* Global Data Section */}
-        {showGlobal && (
-          <div className="section global-data">
-            <button
-              className="toggle-btn global"
-              onClick={() => setShowGlobal(false)} // Hide Global Data
-            >
-              <span className="toggle-icon">−</span>
-            </button>
-            <GlobalFile />
-          </div>
-        )}
-
-        {/* Show Button when Global Data is Hidden */}
-        {!showGlobal && (
+         {/* Global Data Section */}
+      {showGlobal && (
+        <div className="section global-data">
           <button
-            className="show-btn-global"
-            onClick={() => setShowGlobal(true)} // Show Global Data
+            className="toggle-btn global"
+            onClick={() => setShowGlobal(false)} // Hide Global Data
           >
-            <span className="toggle-icon">+</span>
+            <span className="toggle-icon">−</span>
           </button>
-        )}
+          <GlobalFile 
+            globalData={globalData} 
+            setGlobalData={setGlobalData} 
+          />
+        </div>
+      )}
+
+      {/* Show Button when Global Data is Hidden */}
+      {!showGlobal && (
+        <button
+          className="show-btn-global"
+          onClick={() => setShowGlobal(true)} // Show Global Data
+        >
+          <span className="toggle-icon">+</span>
+        </button>
+      )}
       </div>
     </div>
     </div>

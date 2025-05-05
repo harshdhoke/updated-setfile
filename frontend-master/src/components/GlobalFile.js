@@ -1,37 +1,55 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import "../styles/FileData.css";
+import { fetchRegmap } from "../services/api";
 
-const GlobalFile = () => {
-  const [selectedFile, setSelectedFile] = useState(null);
-  const [tableData, setTableData] = useState([]);
-  const [editedCells, setEditedCells] = useState({});
-  const [editingCell, setEditingCell] = useState(null);
-  const [newRows, setNewRows] = useState([]);
-  const [deletedRows, setDeletedRows] = useState([]);
+const GlobalFile = ({ globalData, setGlobalData }) => {
+  const { tableData, selectedFile, fileName } = globalData;
   const [regmapContent, setRegmapContent] = useState({});
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [editingCell, setEditingCell] = useState(null);
+  const [focusedRow, setFocusedRow] = useState(null);
+  const inputRef = useRef(null);
 
-  // Handle file upload
+  useEffect(() => {
+    const fetchAndSetRegmap = async () => {
+      const projectId = localStorage.getItem("projectId");
+      if (projectId) {
+        try {
+          const data = await fetchRegmap(projectId);
+          if (data) setRegmapContent(data);
+        } catch (err) {
+          console.error("Error fetching regmap:", err);
+        }
+      }
+    };
+    fetchAndSetRegmap();
+  }, []);
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (inputRef.current && !inputRef.current.contains(e.target)) {
+        setEditingCell(null);
+      }
+    };
+    if (editingCell) document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [editingCell]);
+
   const handleFileUpload = async (event) => {
     const file = event.target.files[0];
+    setGlobalData((prev) => ({ ...prev, fileName: file.name }));
     const text = await file.text();
     if (text) {
-      setSelectedFile(text);
-      parseUploadedFile(text);
+      setGlobalData((prev) => ({ ...prev, selectedFile: text }));
     }
   };
 
-  // Parse uploaded file
   const parseUploadedFile = (text) => {
     const lines = text.trim().split("\n");
     const result = {};
-    const defaultVals = {};
 
     lines.forEach((line) => {
-      if (line.startsWith("//WRITE")) {
-        // Ignore
-      } else if (line.startsWith("//")) {
+      if (line.startsWith("//WRITE")) return;
+      if (line.startsWith("//")) {
         result[line] = "";
       } else {
         const regex = /WRITE\s+#(\w+)\s+(.+)/;
@@ -43,246 +61,97 @@ const GlobalFile = () => {
       }
     });
 
-    setRegmapContent(result);  // Set parsed result as regmapContent
-    extractDefaultValues(result);
-  };
-
-  // Extract default values (simulating regmap content as a string)
-  const extractDefaultValues = (uploadedResult) => {
-    const defaultVals = {};
-
-    // Simulating regmapContent as a string (this should be dynamic in a real scenario)
-    const regmapContent = {
-      "Tunning_param_1": "0x01",
-      "Tunning_param_2": "0x02",
-      "Tunning_param_3": "0x03",
-    };
-
-    Object.keys(uploadedResult).forEach(key => {
-      if (regmapContent[key]) {
-        defaultVals[key] = regmapContent[key];
-      }
-    });
-
-    setTableData(
-      Object.keys(uploadedResult).map(key => ({
-        Tunning_param: key,
-        DefaultValue: defaultVals[key] || "-",
-        Value: uploadedResult[key],
-      }))
-    );
-  };
-
-  // Handle cell changes (entire table is editable)
-  const handleChange = (e, rowId, colName) => {
-    const newValue = e.target.value;
-    setTableData(prev => {
-      return prev.map(row => {
-        if (row.Tunning_param === rowId) {
-          return {
-            ...row,
-            [colName]: newValue,
-          };
-        }
-        return row;
-      });
-    });
-
-    setEditedCells(prev => {
-      const updated = {
-        ...prev[rowId],
-        [colName]: newValue,
-      };
-      return {
-        ...prev,
-        [rowId]: updated,
-      };
-    });
-  };
-
-  // Logic for adding a row, replicating the logic used in FileDataTable
-  const handleAddRow = (refRow) => {
-    const newTempId = `temp-${Date.now()}`;
-    const index = tableData.findIndex(row => row.Tunning_param === refRow.Tunning_param);
-    const prev = tableData[index];
-    const next = tableData[index + 1];
-
-    let newSerial = next
-      ? (parseFloat(prev.serial_number) + parseFloat(next.serial_number)) / 2
-      : parseFloat(prev.serial_number) + 1;
-
-    const newRow = {
-      id: newTempId,
-      Tunning_param: "",
-      DefaultValue: "-",
-      Value: "",
-    };
-
-    setTableData(prev => {
-      const updated = [...prev];
-      updated.splice(index + 1, 0, newRow);
-      return updated;
-    });
-
-    setNewRows(prev => [
+    setGlobalData((prev) => ({
       ...prev,
-      {
-        tempId: newTempId,
-        refId: next?.Tunning_param ?? refRow.Tunning_param,
-        position: "below",
-        rowData: newRow,
-      },
-    ]);
+      regmapContent: result,
+      tableData: Object.keys(result).map((key) => ({
+        Tunning_param: key,
+        DefaultValue: regmapContent?.[key]?.Value ?? "-",
+        Value: result[key],
+      })),
+    }));
   };
 
-  // Handle Delete Row functionality
-  const handleDeleteRow = (rowId) => {
-    const rowToDelete = tableData.find(row => row.Tunning_param === rowId);
-    if (!rowToDelete) return;
-
-    const confirmed = window.confirm("Are you sure you want to delete this row?");
-    if (!confirmed) return;
-
-    setDeletedRows(prev => [...prev, rowToDelete]); // Store full row object
-    setTableData(prev => prev.filter(row => row.Tunning_param !== rowId)); // Remove from UI
+  const handleChange = (e, rowIndex, colName) => {
+    const newValue = e.target.value;
+    setGlobalData((prev) => {
+      const updatedTable = [...prev.tableData];
+      updatedTable[rowIndex][colName] = newValue;
+      return { ...prev, tableData: updatedTable };
+    });
   };
 
-  // Generate the updated file for download
+  const handleAddRow = (insertIndex = null) => {
+    const newRow = { Tunning_param: "", DefaultValue: "-", Value: "" };
+    setGlobalData((prev) => {
+      const updated = [...prev.tableData];
+      if (insertIndex !== null) {
+        updated.splice(insertIndex + 1, 0, newRow);
+      } else {
+        updated.push(newRow);
+      }
+      return { ...prev, tableData: updated };
+    });
+  };
+
+  const handleDeleteRow = (param) => {
+    if (!window.confirm("Are you sure you want to delete this row?")) return;
+    setGlobalData((prev) => ({
+      ...prev,
+      tableData: prev.tableData.filter((row) => row.Tunning_param !== param),
+    }));
+  };
+
   const generateDownloadFile = () => {
     let fileContent = "";
-
-    tableData.forEach(row => {
-      const tunningParam = row.Tunning_param;
-      const value = row.Value;
-      if (tunningParam && value) {
-        fileContent += `WRITE #${tunningParam} ${value}\n`;
+    tableData.forEach((row) => {
+      const { Tunning_param, Value } = row;
+      if (Tunning_param.startsWith("//")) {
+        fileContent += `\n${Tunning_param}\n`;
+      } else if (Tunning_param && Value) {
+        fileContent += `WRITE #${Tunning_param}   ${Value}\n`;
       }
     });
 
-    // Creating a Blob object for downloading the file
-    const blob = new Blob([fileContent], { type: 'text/plain' });
+    const blob = new Blob([fileContent], { type: "text/plain" });
     const url = URL.createObjectURL(blob);
-
-    // Create a temporary link to trigger the download
-    const a = document.createElement('a');
+    const a = document.createElement("a");
     a.href = url;
-    a.download = "updated_file.nset";
+    a.download = fileName;
     document.body.appendChild(a);
     a.click();
-    document.body.removeChild(a); // Clean up
-    URL.revokeObjectURL(url); // Free up memory
-  };
-
-  // Handle parse button click
-  const handleParseFile = () => {
-    if (selectedFile) {
-      parseUploadedFile(selectedFile);
-    }
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   };
 
   return (
-    <div style={{ padding: '20px' }}>
-      <h3 style={{ display: 'inline-block', marginRight: '10px' }}>Global Settings</h3>
-
-      {/* Upload File Button */}
-      <input
-        type="file"
-        accept=".nset"
-        style={{ display: 'inline-block', marginRight: '10px' }}
-        onChange={handleFileUpload}
-      />
-
-      {/* Parse File Button */}
-      <button
-        onClick={handleParseFile}
-        style={{ display: 'inline-block', marginLeft: '10px' }}
-      >
+    <div style={{ padding: "20px" }}>
+      <h3 style={{ display: "inline-block", marginRight: "10px" }}>Global Settings</h3>
+      <input type="file" accept=".nset" onChange={handleFileUpload} />
+      <button onClick={() => parseUploadedFile(selectedFile)} style={{ marginLeft: "10px" }}>
         Parse File
       </button>
-
-      {/* Download Updated File Button */}
-      <button
-        onClick={generateDownloadFile}
-        style={{ display: 'inline-block', marginLeft: '10px' }}
-      >
+      <button onClick={generateDownloadFile} style={{ marginLeft: "10px" }}>
         Download Updated File
       </button>
 
-      <div style={{ maxHeight: '78vh', overflowY: 'auto', marginTop: '20px' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse', border: '1px solid #ddd' }}>
-          <thead>
-            <tr style={{ backgroundColor: '#f1f1f1' }}>
-              <th style={{ padding: '12px', textAlign: 'left', border: '1px solid #ddd' }}>Tuning Parameter</th>
-              <th style={{ padding: '12px', textAlign: 'left', border: '1px solid #ddd' }}>Default Value</th>
-              <th style={{ padding: '12px', textAlign: 'left', border: '1px solid #ddd' }}>Value</th>
+      <div style={{ maxHeight: "78vh", overflowY: "auto", marginTop: "20px" }}>
+        <table style={{ width: "100%", borderCollapse: "collapse", border: "1px solid #ddd" }}>
+          <thead style={{ position: "sticky", top: 0, zIndex: 1, backgroundColor: "#f1f1f1" }}>
+            <tr>
+              <th style={{ width: "50px" }}></th> {/* for + button */}
+              <th style={{ padding: "12px", border: "1px solid #ddd" }}>Tunning_param</th>
+              <th style={{ padding: "12px", border: "1px solid #ddd" }}>DefaultValue</th>
+              <th style={{ padding: "12px", border: "1px solid #ddd" }}>Value</th>
+              <th style={{ padding: "12px", border: "1px solid #ddd" }}>Actions</th>
             </tr>
           </thead>
           <tbody>
             {tableData.map((row, index) => (
               <tr key={index}>
-                <td style={{ padding: '10px', border: '1px solid #ddd' }}>
-                  {editingCell?.rowId === row.Tunning_param && editingCell?.colName === "Tunning_param" ? (
-                    <input
-                      value={row.Tunning_param}
-                      onChange={(e) => handleChange(e, row.Tunning_param, 'Tunning_param')}
-                      onBlur={() => setEditingCell(null)}
-                      autoFocus
-                      style={{ width: '100%', padding: '6px', fontSize: '14px', boxSizing: 'border-box' }}
-                    />
-                  ) : (
-                    <div
-                      onDoubleClick={() => setEditingCell({ rowId: row.Tunning_param, colName: "Tunning_param" })}
-                    >
-                      {row.Tunning_param}
-                    </div>
-                  )}
-                </td>
-                <td style={{ padding: '10px', border: '1px solid #ddd' }}>
-                  {editingCell?.rowId === row.Tunning_param && editingCell?.colName === "DefaultValue" ? (
-                    <input
-                      value={row.DefaultValue}
-                      onChange={(e) => handleChange(e, row.Tunning_param, 'DefaultValue')}
-                      onBlur={() => setEditingCell(null)}
-                      autoFocus
-                      style={{ width: '100%', padding: '6px', fontSize: '14px', boxSizing: 'border-box' }}
-                    />
-                  ) : (
-                    <div
-                      onDoubleClick={() => setEditingCell({ rowId: row.Tunning_param, colName: "DefaultValue" })}
-                    >
-                      {row.DefaultValue}
-                    </div>
-                  )}
-                </td>
-                <td style={{ padding: '10px', border: '1px solid #ddd' }}>
-                  {editingCell?.rowId === row.Tunning_param && editingCell?.colName === "Value" ? (
-                    <input
-                      value={row.Value}
-                      onChange={(e) => handleChange(e, row.Tunning_param, 'Value')}
-                      onBlur={() => setEditingCell(null)}
-                      autoFocus
-                      style={{ width: '100%', padding: '6px', fontSize: '14px', boxSizing: 'border-box' }}
-                    />
-                  ) : (
-                    <div
-                      onDoubleClick={() => setEditingCell({ rowId: row.Tunning_param, colName: "Value" })}
-                    >
-                      {row.Value}
-                    </div>
-                  )}
-                </td>
-                <td>
+                <td style={{ border: "1px solid #ddd", textAlign: "center" }}>
                   <button
-                    className="delete-button"
-                    onClick={() => handleDeleteRow(row.Tunning_param)}
-                    style={{ padding: '4px 8px', backgroundColor: '#f44336', color: 'white', border: 'none', cursor: 'pointer' }}
-                  >
-                    Delete
-                  </button>
-                </td>
-                <td style={{ padding: "10px" }}>
-                  <button
-                    onClick={() => handleAddRow(row)}
+                    onClick={() => handleAddRow(index)}
                     style={{
                       fontSize: "14px",
                       padding: "4px 8px",
@@ -290,9 +159,87 @@ const GlobalFile = () => {
                       border: "1px solid #ccc",
                       backgroundColor: "#e9ecef",
                       cursor: "pointer",
+                      lineHeight: "1",
                     }}
                   >
                     +
+                  </button>
+                </td>
+                {["Tunning_param", "DefaultValue", "Value"].map((col) => (
+                  <td
+                    key={col}
+                    onDoubleClick={() =>
+                      col !== "DefaultValue" && setEditingCell({ rowId: index, colName: col })
+                    }
+                    style={{
+                      border: "1px solid #ddd",
+                      padding: "10px",
+                      cursor: col !== "DefaultValue" ? "pointer" : "not-allowed",
+                      backgroundColor:
+                        editingCell?.rowId === index && editingCell?.colName === col
+                          ? "#fff3cd"
+                          : "transparent",
+                    }}
+                  >
+                    {editingCell?.rowId === index && editingCell?.colName === col ? (
+                      col === "Tunning_param" ? (
+                        <div className="autocomplete-wrapper">
+                          <input
+                            ref={inputRef}
+                            autoFocus
+                            value={row[col]}
+                            onChange={(e) => handleChange(e, index, col)}
+                            onFocus={() => setFocusedRow(index)}
+                            style={{ width: "100%", padding: "6px", fontSize: "14px" }}
+                          />
+                          {focusedRow === index && (
+                            <div className="suggestion-box">
+                              {Object.keys(regmapContent)
+                                .filter((key) =>
+                                  key.toLowerCase().includes(row[col]?.toLowerCase() || "")
+                                )
+                                .slice(0, 50)
+                                .map((key, idx) => (
+                                  <div
+                                    key={idx}
+                                    className="suggestion-item"
+                                    onMouseDown={() => {
+                                      handleChange({ target: { value: key } }, index, col);
+                                      setEditingCell(null);
+                                    }}
+                                  >
+                                    {key}
+                                  </div>
+                                ))}
+                            </div>
+                          )}
+                        </div>
+                      ) : (
+                        <input
+                          ref={inputRef}
+                          autoFocus
+                          value={row[col]}
+                          onChange={(e) => handleChange(e, index, col)}
+                          style={{ width: "100%", padding: "6px", fontSize: "14px" }}
+                        />
+                      )
+                    ) : (
+                      row[col]
+                    )}
+                  </td>
+                ))}
+                <td style={{ border: "1px solid #ddd", padding: "10px" }}>
+                  <button
+                    onClick={() => handleDeleteRow(row.Tunning_param)}
+                    style={{
+                      padding: "4px 8px",
+                      backgroundColor: "#f44336",
+                      color: "white",
+                      border: "none",
+                      cursor: "pointer",
+                    }}
+                  >
+                    Delete
                   </button>
                 </td>
               </tr>
