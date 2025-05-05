@@ -8,18 +8,42 @@ import {
   fetchModes,
   fetchProjectById,
   fetchSettings,
+  getCustomerById,
 } from "../services/api";
 import AddCustomerModal from "./AddCustomerModal";
 import AddModeModal from "./AddModeModal";
 import AddMkclTableModal from "./AddMkclTableModal";
 
 import "../styles/CreateNewSetfileNavbar.css";
+const mergedGroups = [
+  "//$MV4[MCLK:[*MCLK*],mipi_phy_type:[*PHY_TYPE*],mipi_lane:[*PHY_LANE*],mipi_datarate:[*MIPI_DATA_RATE*]]",
+  "//$MV4_CPHY_LRTE[enable:[*LRTE_EN*],longPacketSpace:2,shortPacketSpace:2]",
+  "//$MV4_Scramble[enable:[*SCRAMBLE_EN*]]",
+  "//$MV4_MainData[width:[*WIDTH*],height:[*HEIGHT*],data_type:[*DATA_TYPE*],virtual_channel:[*MAIN_VC*]]",
+  "//$MV4_InterleavedData[isUsed:[*ILD_IS_USED_LCG*],width:[*ILD_WIDTH_LCG*],height:[*ILD_HEIGHT_LCG*],data_type:[*DATA_TYPE*],virtual_channel:[*ILD_LCG_VC*]]",
+  "//$MV4_InterleavedData[isUsed:[*ILD_IS_USED1*],width:[*ILD_WIDTH1*],height:[*ILD_HEIGHT1*],data_type:MIPI_RAW10 (0x2B),virtual_channel:[*ILD1_VC*]]",
+  "//$MV4_InterleavedData[isUsed:[*ILD_IS_USED2*],width:[*ILD_WIDTH2*],height:[*ILD_HEIGHT2*],data_type:MIPI_RAW10 (0x2B),virtual_channel:[*ILD2_VC*]]",
+  "//$MV4_InterleavedData[isUsed:[*ILD_ELG_IS_USED3*],width:[*WIDTH*],height:[*ILD_ELG_HEIGHT3*],data_type:Embedded_Data (0x12),virtual_channel:[*ILD3_ELG_VC*]]",
+  "//$MV4_InterleavedData[isUsed:[*ILD_ELG_IS_USED4*],width:[*WIDTH*],height:[*ILD_ELG_HEIGHT4*],data_type:User_Defined_1 (0x30),virtual_channel:[*ILD4_ELG_VC*]]",
+  "//$MV4_Start[]",
+  "//$MV6[MCLK:[*MCLK*],mipi_phy_type:[*PHY_TYPE*],mipi_lane:[*PHY_LANE*],mipi_datarate:[*MIPI_DATA_RATE*]]",
+  "//$MV6_CPHY_LRTE[enable:[*LRTE_EN*],longPacketSpace:2,shortPacketSpace:2]",
+  "//$MV6_Scramble[enable:[*SCRAMBLE_EN*]]",
+  "//$MV6_MainData[width:[*WIDTH*],height:[*HEIGHT*],data_type:[*DATA_TYPE*],virtual_channel:[*MAIN_VC*]]",
+  "//$MV6_InterleavedData[isUsed:[*ILD_IS_USED_LCG*],width:[*ILD_WIDTH_LCG*],height:[*ILD_HEIGHT_LCG*],data_type:[*DATA_TYPE*],virtual_channel:[*ILD_LCG_VC*]]",
+  "//$MV6_InterleavedData[isUsed:[*ILD_IS_USED1*],width:[*ILD_WIDTH1*],height:[*ILD_HEIGHT1*],data_type:MIPI_RAW10 (0x2B),virtual_channel:[*ILD1_VC*]]",
+  "//$MV6_InterleavedData[isUsed:[*ILD_IS_USED2*],width:[*ILD_WIDTH2*],height:[*ILD_HEIGHT2*],data_type:MIPI_RAW10 (0x2B),virtual_channel:[*ILD2_VC*]]",
+  "//$MV6_InterleavedData[isUsed:[*ILD_ELG_IS_USED3*],width:[*WIDTH*],height:[*ILD_ELG_HEIGHT3*],data_type:Embedded_Data (0x12),virtual_channel:[*ILD3_ELG_VC*]]",
+  "//$MV6_InterleavedData[isUsed:[*ILD_ELG_IS_USED4*],width:[*WIDTH*],height:[*ILD_ELG_HEIGHT4*],data_type:User_Defined_1 (0x30),virtual_channel:[*ILD4_ELG_VC*]]",
+  "//$MV6_Start[]"
+];
 
-const CreateNewSetfileNavbar = ({ selectedModes, setSelectedModes }) => {
+const CreateNewSetfileNavbar = ({style, selectedModes, setSelectedModes }) => {
   const navigate = useNavigate();
   const user = JSON.parse(localStorage.getItem("user"));
   const projectName = localStorage.getItem("projectName") || "No Project Selected";
   const projectId = localStorage.getItem("projectId");
+
   const [selectedFile, setSelectedFile] = useState(null);
   const [message, setMessage] = useState("");
   const [customers, setCustomers] = useState([]);
@@ -28,7 +52,7 @@ const CreateNewSetfileNavbar = ({ selectedModes, setSelectedModes }) => {
   const [isModalOpen, setModalOpen] = useState(false);
   const [showAlert, setShowAlert] = useState(false);
   const [modes, setModes] = useState([]);
-  // const [selectedMode, setSelectedMode] = useState("");
+  const [uniqueVariables, setUniqueVariables] = useState([]);
   const [isModeModalOpen, setModeModalOpen] = useState(false);
   const [mkclTables, setMkclTables] = useState([]);
   const [selectedMkclTable, setSelectedMkclTable] = useState("");
@@ -88,8 +112,6 @@ const CreateNewSetfileNavbar = ({ selectedModes, setSelectedModes }) => {
   const handleCustomerChange = (event) => {
     const selectedId = event.target.value;
     setSelectedCustomer(selectedId);
-    
-    localStorage.setItem("cus",selectedCustomer);
     setSelectedModes("");
     setSelectedMkclTable("");
   };
@@ -110,6 +132,7 @@ const CreateNewSetfileNavbar = ({ selectedModes, setSelectedModes }) => {
 
   useEffect(() => {
     if (selectedCustomer) {
+      fetchCustomerById(selectedCustomer);
       fetchModes(selectedCustomer).then(setModes);
       fetchSettings(selectedCustomer).then(setMkclTables);
     } else {
@@ -117,10 +140,46 @@ const CreateNewSetfileNavbar = ({ selectedModes, setSelectedModes }) => {
       setMkclTables([]);
     }
   }, [selectedCustomer]);
+  const fetchCustomerById = async (customerId) => {
+    try {   
+      const data = await getCustomerById(customerId);
+      //setSelectedmv(data.selectedmv.split(",")); // Assuming selectedmv is a comma-separated string
+     // console.log("Selected MV:", data.selectedmv); // Log selected mv
+     extractUniqueVariables(data.selectedmv.split(",")); // Extract unique variables from selected mv
+     // console.log("Selected MV Array:", selectedmv); // Log selected mv array
+    } catch (error) {
+      console.error("Failed to fetch customer data:", error); 
+    }
+  };  
+  const extractUniqueVariables = (mvArr) => {
+    console.log("Selected MV1 Array:", mvArr); // Log selected mv array
+   const regex = /\[\*(.*?)\*\]/g;
+   let variables = new Set(); // Using Set to ensure uniqueness
 
+    const extractFromText = (text) => {
+        if (!text) return;
+        let match;
+        while ((match = regex.exec(text)) !== null) {
+            variables.add(match[1]); // Extract matched value inside [* *]
+        }
+    };
+      for (let i = 0; i < mvArr.length; i++) {
+        const mv = mergedGroups[mvArr[i]];
+        extractFromText(mv); // Extract variables from each mv
+      }
+      setUniqueVariables([...variables]);
+
+  //    // Convert Set to Array
+   console.log("Unique Variables:", uniqueVariables); // Log unique variables
+};
+useEffect(() => {
+  if(uniqueVariables.length)
+  console.log("Updated unique variables:", uniqueVariables);
+}, [uniqueVariables]);
   const generatedSetfileName = `${setfilePrefix || "prefix"}_${selectedCustomerName || "customer"}_${projectName}_${(modes.find(m => String(m.id) === String(selectedModes))?.name || "mode")}_${resolution || "res"}_${fps || "fps"}${setfileSuffix ? `_${setfileSuffix}` : ''}.nset`;
 
   return (
+    <nav style={style}>
     <nav className="create-new-setfile-navbar">
       <div className="create-new-setfile-navbar-top">
         <div className="create-new-setfile-user-project">
@@ -201,7 +260,7 @@ const CreateNewSetfileNavbar = ({ selectedModes, setSelectedModes }) => {
           projectName={projectName}
           customerName={selectedCustomer}
           customerId={selectedCustomer}
-          uniqueArray1={[]}
+          uniqueArray1={uniqueVariables}
           refreshModes={() => fetchSettings(selectedCustomer).then(setMkclTables)}
         />
       </div>
@@ -244,6 +303,7 @@ const CreateNewSetfileNavbar = ({ selectedModes, setSelectedModes }) => {
           <strong>{generatedSetfileName}</strong>
         </div>
       </div>
+    </nav>
     </nav>
   );
 };

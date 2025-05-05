@@ -3,7 +3,12 @@ const path = require("path");
 const fs = require("fs");
 
 // Define upload directory
-const UPLOAD_DIR = "D:\\Setfile-Ziya\\Regmap";
+const UPLOAD_DIR = "D:\\Regmap";
+
+// Ensure upload directory exists
+if (!fs.existsSync(UPLOAD_DIR)) {
+  fs.mkdirSync(UPLOAD_DIR, { recursive: true });
+}
 
 // Ensure upload directory exists
 if (!fs.existsSync(UPLOAD_DIR)) {
@@ -15,7 +20,7 @@ if (!fs.existsSync(UPLOAD_DIR)) {
 
 exports.createProject = async (req, res) => {
   try {
-    const { name, mv4, mv6 } = req.body;
+    const { name} = req.body;
 
     if (!name) {
       return res.status(400).json({ message: "Project name is required" });
@@ -47,10 +52,10 @@ exports.createProject = async (req, res) => {
 
     // Insert project into the database
     const query = `
-      INSERT INTO project (name, mv4, mv6, regmap_path, regmap_binpath, start_fname)
-      VALUES (?, ?, ?, ?, ?, ?)
+      INSERT INTO project (name, regmap_path, regmap_binpath, start_fname)
+      VALUES (?,  ?, ?, ?)
     `;
-    const [result] = await pool.query(query, [name, mv4, mv6, regmapPath, regmapBinPath, start_fname]);
+    const [result] = await pool.query(query, [name,  regmapPath, regmapBinPath, start_fname]);
     res.json({ 
       message: "Project created successfully", 
       projectId: result.insertId,
@@ -82,7 +87,7 @@ exports.uploadRegmap = async (req, res) => {
     // **Step 2: Remove Existing `.regmap.h` Files**
     const files = fs.readdirSync(projectDir);
     files.forEach((file) => {
-      if (file.endsWith("RegsMap.h")) {
+      if (file.endsWith(".regmap.h.txt")) {
         fs.unlinkSync(path.join(projectDir, file));
       }
     });
@@ -144,6 +149,7 @@ exports.getProjectById = async (req, res) => {
       res.status(500).json({ message: "Database error", error: err.message });
   }
 };
+
 
 exports.getRegmap = async (req, res) => {
   try {

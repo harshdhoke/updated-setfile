@@ -70,6 +70,7 @@ const FileList = ({selectedSetFiles,setSelectedSetFiles}) => {
   useEffect(() => {
     if (selectedCustomer && customers.length > 0) {
       const customerObj = customers.find((c) => String(c.id) === String(selectedCustomer));
+     
     }
   }, [selectedCustomer, customers]);
 

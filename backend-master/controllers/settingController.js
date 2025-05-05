@@ -95,53 +95,95 @@ exports.addSettings = async (req, res) => {
     res.status(500).json({ message: "Database error", error: err.message });
   }
 };
-
 exports.addSetting = async (req, res) => {
+  const connection = await pool.getConnection();
+  console.log("xcxcz")
   try {
-    const { customer_id, name, table_name, uniqueArray1 } = req.body;
-    console.log("uniqueArray1:", uniqueArray1);
+    const { customer_id, name, table_name } = req.body;
 
     if (!customer_id || !name || !table_name) {
       return res.status(400).json({ message: "Missing required fields" });
     }
 
-    // **Insert the setting into the database**
-    const settingQuery = "INSERT INTO setting (customer_id, name, table_name) VALUES (?, ?, ?)";
-    const [result] = await pool.query(settingQuery, [customer_id, name, table_name]);
+    // Start transaction
+    await connection.beginTransaction();
 
-    // Get the inserted setting with only id, name, and table_name
-    const settingId = result.insertId;
-    const settingQuerySelect = "SELECT id, name, table_name FROM setting WHERE id = ?";
-    const [[newSetting]] = await pool.query(settingQuerySelect, [settingId]);
+    // Step 1: Fetch mvvariables
+    const [customerRows] = await connection.query(
+      "SELECT mvvariables FROM customer WHERE id = ?",
+      [customer_id]
+    );
 
-    // **Create the table for the new setting**
+    if (customerRows.length === 0) {
+      await connection.rollback();
+      return res.status(404).json({ message: "Customer not found" });
+    }
+
+    const originalMvvariables = customerRows[0].mvvariables;
+
+    let uniqueArray1 = [];
     try {
-      const createTableQuery = `
-        CREATE TABLE IF NOT EXISTS \`${newSetting.table_name}\` (
-          id INT AUTO_INCREMENT PRIMARY KEY,
-          Tunning_param VARCHAR(512) DEFAULT NULL
-        )
-      `;
-      await pool.query(createTableQuery);
-    } catch (tableError) {
-      console.error(`Error creating table ${newSetting.table_name}:`, tableError);
-      return res.status(500).json({ message: `Error creating table ${newSetting.table_name}` });
+      uniqueArray1 = JSON.parse(originalMvvariables);
+    } catch (parseErr) {
+      await connection.rollback();
+      console.error("Error parsing mvvariables JSON:", parseErr);
+      return res.status(500).json({ message: "Invalid mvvariables format in customer table" });
     }
 
-    // **Insert values into the new table**
-    if (uniqueArray1 && Array.isArray(uniqueArray1) && uniqueArray1.length > 0) {
-      try {
-        const insertQuery = `INSERT INTO \`${newSetting.table_name}\` (Tunning_param) VALUES ?`;
-        const values = uniqueArray1.map((param) => [param]); // Convert array for bulk insert
-        await pool.query(insertQuery, [values]);
-      } catch (insertError) {
-        console.error(`Error inserting values into ${newSetting.table_name}:`, insertError);
-        return res.status(500).json({ message: `Error inserting values into ${newSetting.table_name}` });
-      }
+    // Step 2: Insert into setting table
+    const [result] = await connection.query(
+      "INSERT INTO setting (customer_id, name, table_name) VALUES (?, ?, ?)",
+      [customer_id, name, table_name]
+    );
+
+    const settingId = result.insertId;
+
+    const [[newSetting]] = await connection.query(
+      "SELECT id, name, table_name FROM setting WHERE id = ?",
+      [settingId]
+    );
+
+    const createTableQuery = `
+      CREATE TABLE IF NOT EXISTS \`${newSetting.table_name}\` (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        serial_number INT NOT NULL,
+        Tunning_param VARCHAR(512) DEFAULT NULL
+      )
+    `;
+    await connection.query(createTableQuery);
+
+    // Step 3: Re-check mvvariables
+    const [recheckRows] = await connection.query(
+      "SELECT mvvariables FROM customer WHERE id = ?",
+      [customer_id]
+    );
+
+    const latestMvvariables = recheckRows[0]?.mvvariables;
+
+    if (latestMvvariables !== originalMvvariables) {
+      // Conflict detected, clean up
+      await connection.query(`DROP TABLE IF EXISTS \`${newSetting.table_name}\``);
+      await connection.rollback();
+      return res.status(409).json({ message: "Customer mvvariables changed during operation. Aborted." });
     }
+
+    // Step 4: Insert default variables into the new setting table
+    if (uniqueArray1 && Array.isArray(uniqueArray1) && uniqueArray1.length > 0) {
+      const insertQuery = `INSERT INTO \`${newSetting.table_name}\` (serial_number, Tunning_param) VALUES ?`;
+      const values = uniqueArray1.map((param, index) => [index + 1, param]);
+      await connection.query(insertQuery, [values]);
+    }
+
+    // Commit transaction
+    await connection.commit();
 
     res.json({ message: "Setting added successfully", setting: newSetting });
+
   } catch (err) {
+    console.error("Error in addSetting:", err);
+    await connection.rollback(); // Rollback transaction on error
     res.status(500).json({ message: "Database error", error: err.message });
+  } finally {
+    connection.release();
   }
 };

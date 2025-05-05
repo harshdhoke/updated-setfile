@@ -1,24 +1,27 @@
 import { useState } from "react";
-import { addSetting } from "../services/api";
+import { addSetting ,getCustomerById} from "../services/api";
 
 
 const AddMkclTableModal = ({ isOpen, onClose, projectName, customerName, customerId,uniqueArray1,refreshModes }) => {
   const [interfaceType, setInterfaceType] = useState("cphy");
   const [clockRate, setClockRate] = useState("");
   console.log(projectName, customerName, customerId,uniqueArray1);
-
   const handleSubmit = async () => {
     if (!clockRate.trim()) {
       alert("Please enter a valid clock rate.");
       return;
     }
-
+ 
     try {
-      const tableName = `${projectName}_${customerName}_${interfaceType}_${clockRate}`;
-       const name= `${interfaceType}_${clockRate}`;
-    //   // Add new setting to database
-     await addSetting(customerId,name,tableName,uniqueArray1);
-     refreshModes(); // Refresh mode list
+      // Fetch customer details
+      const data = await getCustomerById(customerId);
+      const updatedCustomerName = data.name;
+     // Construct table name
+      const tableName = `${projectName}_${updatedCustomerName}_${interfaceType}_${clockRate}`;
+      // Add new setting to database
+      const naa=`${interfaceType}_${clockRate}`
+      await addSetting(customerId,naa,tableName);
+      alert("MKCL Table added successfully!");
       onClose(); // Close modal after successful submission
     } catch (error) {
       console.error("Error handling MKCL Table addition:", error);
@@ -26,7 +29,7 @@ const AddMkclTableModal = ({ isOpen, onClose, projectName, customerName, custome
     }
   };
 
-  if (!isOpen) return null; // Don't render the modal if not open
+  if (!isOpen) return null;  // Don't render the modal if not open
 
   return (
     <div className="modal-overlay">

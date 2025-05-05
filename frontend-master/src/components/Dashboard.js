@@ -26,6 +26,8 @@ const Dashboard = () => {
         className="sticky-navbar" // Add the sticky class here
         selectedModes={selectedModes}
         setSelectedModes={setSelectedModes}
+        selectedCustomer={selectedCustomer}
+        setSelectedCustomer={setSelectedCustomer}
       />
      <div style={{ padding: "20px", maxWidth: "100%",overflowY:"auto"}}>
       <div className={`dashboard-container ${showGlobal ? "" : "expanded"} ${showFileList ? "" : "expanded-filelist"}`}>
@@ -47,6 +49,7 @@ const Dashboard = () => {
               selectedModes={selectedModes}
               selectedSetFiles={selectedSetFiles}
               setSelectedSetFiles={setSelectedSetFiles}
+              selectedCustomer={selectedCustomer}
             />
           </div>
         )}

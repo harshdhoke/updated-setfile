@@ -16,8 +16,6 @@ export const loginUser = async (email, password) => {
     throw error.response?.data?.message || "Login failed. Please try again.";
   }
 };
-
-// Fetch all projects
 export const fetchProjects = async () => {
   try {
     const response = await axios.get(`${API_BASE_URL}/projects`, getAuthHeaders());
@@ -65,12 +63,12 @@ export const fetchCustomers = async (projectId) => {
 };
 
 // Add a new customer to a project
-export const addCustomers = async (projectId, customers) => {
+export const addCustomers = async (projectId, customers,selectedIndexes) => {
   try {
-    // console.log(customers);
+    console.log("selectedIndexes",selectedIndexes);
     const response = await axios.post(
       `${API_BASE_URL}/customers`,
-      { projectId, customers },
+      { projectId, customers,selectedIndexes },
       getAuthHeaders()
     );
     return response.data;
@@ -147,14 +145,14 @@ export const uploadRegmap = async ({ file, projectId, name }) => {
     throw error.response?.data?.message || "Regmap upload failed.";
   }
 };
-export const addSetting = async (customerId, name, tableName, uniqueArray) => {
+export const addSetting = async (customerId, name, tableName) => {
+  console.log("setiing",customerId, name, tableName);
   try {
     const response = await axios.post(`${API_BASE_URL}/settings/add`, {
       customer_id: customerId,
       name,
       table_name: tableName,
-      uniqueArray1: uniqueArray
-    }, getAuthHeaders());
+    },getAuthHeaders());
 
     return response.data;
   } catch (error) {
@@ -216,6 +214,7 @@ export const fetchTableData = async (tableName, columnName) => {
   }
 };
  
+
 export const updateRowAPI = async (tableName, id, columnName, value,regmapEntry) => {
   try {
     const response = await axios.post(
@@ -254,7 +253,7 @@ export const fetchRegmap = async (projectId) => {
     const response = await fetch(`${API_BASE_URL}/projects/regmap/${projectId}`, getAuthHeaders());
     const fileBlob = await response.blob(); // Get the file as a Blob
     const text = await fileBlob.text(); // Convert the Blob into text
-    //  console.log("Raw Text from Regmap:", text);
+    // console.log("Raw Text from Regmap:", text);
 
     // Parse the text content
     const lines = text.trim().split("\n");
@@ -272,7 +271,7 @@ export const fetchRegmap = async (projectId) => {
       }
     });
 
-    // console.log("Parsed Regmap Data:", data);
+   // console.log("Parsed Regmap Data:", data);
     return data;
 
   } catch (err) {
@@ -280,7 +279,6 @@ export const fetchRegmap = async (projectId) => {
     return null;
   }
 };
-
 
 export const deleteRowAPI = async (tableName, rowId) => {
   try {
@@ -310,3 +308,27 @@ export const markFileAsDeleted = async (file) => {
     throw error;
   }
 };
+export const updateMVHeaderForFile = async (fileId, selectedmv,selectedCustomer,selectedIndexes) => {
+  try {
+    const response = await axios.post(
+      `${API_BASE_URL}/setfile/update-mv`,
+      { file_id: fileId, selectedmv,selectedCustomer,selectedIndexes },
+      getAuthHeaders()
+    );
+    return response.data;
+  } catch (error) {
+    throw error.response?.data?.message || "Failed to update MV headers.";
+  }
+};
+export const updateMVHeaderForCustomer = async (customerId, selectedIndexes) => {
+  try {
+    const response = await axios.post(
+      `${API_BASE_URL}/customers/update-mv`,
+      {customerId, selectedIndexes },
+      getAuthHeaders()
+    );
+    return response.data;
+  } catch (error) {
+    throw error.response?.data?.message || "Failed to update MV headers.";
+  }
+}

@@ -10,7 +10,7 @@ exports.getSetFiles = async (req, res) => {
 
   try {
     const [rows] = await pool.query(
-      "SELECT id, mode_id, setting_id, name, full_name, created_at FROM setfile WHERE mode_id = ?",
+      "SELECT * FROM setfile WHERE mode_id = ?",
       [mode_id]
     );
 
@@ -117,7 +117,7 @@ exports.updateRow = async (req, res) => {
       const [columnsResult] = await pool.query(`SHOW COLUMNS FROM \`${tableName}\``);
       const allColumns = columnsResult.map(col => col.Field);
 
-      // Exclude non-editable columns
+      // Exclude non-editable column
       const columnsToUpdate = allColumns.filter(col =>
         !["id", "serial_number", "Tunning_param"].includes(col)
       );
@@ -160,7 +160,8 @@ exports.updateRow = async (req, res) => {
     console.error("Update row error:", error);
     return res.status(500).json({ error: "Failed to update row" });
   }
-};
+}; // Assuming db.js is in the parent directory
+
 exports.deleteRow = async (req, res) => {
   const { tableName, rowId } = req.body;
   console.log("Received request to delete row:", req.body);
@@ -253,6 +254,145 @@ exports.markFileAsDeleted = async (req, res) => {
     await connection.rollback();
     console.error("Error in markFileAsDeleted:", error);
     res.status(500).json({ success: false, error: "Internal server error" });
+  } finally {
+    connection.release();
+  }
+};
+exports.updateSelectedMV = async (req, res) => {
+  const { file_id, selectedmv, selectedCustomer, selectedIndexes } = req.body;
+  console.log("Received request to update selectedmv:", req.body);
+
+  if (!file_id || selectedmv === undefined || selectedCustomer === "" || !Array.isArray(selectedIndexes)) {
+    return res.status(400).json({ message: "file_id, selectedmv, selectedCustomer, and selectedIndexes are required" });
+  }
+
+  const connection = await pool.getConnection();
+
+  try {
+    await connection.beginTransaction();
+
+    //  Step 0: Lock customer, setfile, setting, and all related tables
+    const [settingRows] = await connection.query(
+      "SELECT table_name FROM setting WHERE customer_id = ?",
+      [selectedCustomer]
+    );
+
+    const tableNames = settingRows.map(row => row.table_name);
+    const tablesToLock = [
+      "customer WRITE",
+      "setfile WRITE",
+      "setting WRITE",
+      ...tableNames.map(name => `${connection.escapeId(name)} WRITE`)
+    ].join(", ");
+
+    await connection.query(`LOCK TABLES ${tablesToLock}`);
+
+    // \U0001f539 Step 1: Fetch mvvariables AFTER locking
+    const [customerRows] = await connection.query("SELECT mvvariables FROM customer WHERE id = ?", [selectedCustomer]);
+    if (customerRows.length === 0) {
+      await connection.rollback();
+      await connection.query("UNLOCK TABLES");
+      return res.status(404).json({ message: "Customer not found" });
+    }
+
+    const mvvariablesStr = customerRows[0].mvvariables;
+    let uniqueArray1 = [];
+
+    try {
+      uniqueArray1 = JSON.parse(mvvariablesStr);
+    } catch (parseErr) {
+      await connection.rollback();
+      await connection.query("UNLOCK TABLES");
+      console.error("Error parsing mvvariables JSON:", parseErr);
+      return res.status(500).json({ message: "Invalid mvvariables format in customer table" });
+    }
+
+    // \U0001f539 MV Templates (You need to fill this array)
+    const mergedGroups = [ "//$MV4[MCLK:[*MCLK*],mipi_phy_type:[*PHY_TYPE*],mipi_lane:[*PHY_LANE*],mipi_datarate:[*MIPI_DATA_RATE*]]",
+      "//$MV4_CPHY_LRTE[enable:[*LRTE_EN*],longPacketSpace:2,shortPacketSpace:2]",
+      "//$MV4_Scramble[enable:[*SCRAMBLE_EN*]]",
+      "//$MV4_MainData[width:[*WIDTH*],height:[*HEIGHT*],data_type:[*DATA_TYPE*],virtual_channel:[*MAIN_VC*]]",
+      "//$MV4_InterleavedData[isUsed:[*ILD_IS_USED_LCG*],width:[*ILD_WIDTH_LCG*],height:[*ILD_HEIGHT_LCG*],data_type:[*DATA_TYPE*],virtual_channel:[*ILD_LCG_VC*]]",
+      "//$MV4_InterleavedData[isUsed:[*ILD_IS_USED1*],width:[*ILD_WIDTH1*],height:[*ILD_HEIGHT1*],data_type:MIPI_RAW10 (0x2B),virtual_channel:[*ILD1_VC*]]",
+      "//$MV4_InterleavedData[isUsed:[*ILD_IS_USED2*],width:[*ILD_WIDTH2*],height:[*ILD_HEIGHT2*],data_type:MIPI_RAW10 (0x2B),virtual_channel:[*ILD2_VC*]]",
+      "//$MV4_InterleavedData[isUsed:[*ILD_ELG_IS_USED3*],width:[*WIDTH*],height:[*ILD_ELG_HEIGHT3*],data_type:Embedded_Data (0x12),virtual_channel:[*ILD3_ELG_VC*]]",
+      "//$MV4_InterleavedData[isUsed:[*ILD_ELG_IS_USED4*],width:[*WIDTH*],height:[*ILD_ELG_HEIGHT4*],data_type:User_Defined_1 (0x30),virtual_channel:[*ILD4_ELG_VC*]]",
+      "//$MV4_Start[]",
+      "//$MV6[MCLK:[*MCLK*],mipi_phy_type:[*PHY_TYPE*],mipi_lane:[*PHY_LANE*],mipi_datarate:[*MIPI_DATA_RATE*]]",
+      "//$MV6_CPHY_LRTE[enable:[*LRTE_EN*],longPacketSpace:2,shortPacketSpace:2]",
+      "//$MV6_Scramble[enable:[*SCRAMBLE_EN*]]",
+      "//$MV6_MainData[width:[*WIDTH*],height:[*HEIGHT*],data_type:[*DATA_TYPE*],virtual_channel:[*MAIN_VC*]]",
+      "//$MV6_InterleavedData[isUsed:[*ILD_IS_USED_LCG*],width:[*ILD_WIDTH_LCG*],height:[*ILD_HEIGHT_LCG*],data_type:[*DATA_TYPE*],virtual_channel:[*ILD_LCG_VC*]]",
+      "//$MV6_InterleavedData[isUsed:[*ILD_IS_USED1*],width:[*ILD_WIDTH1*],height:[*ILD_HEIGHT1*],data_type:MIPI_RAW10 (0x2B),virtual_channel:[*ILD1_VC*]]",
+      "//$MV6_InterleavedData[isUsed:[*ILD_IS_USED2*],width:[*ILD_WIDTH2*],height:[*ILD_HEIGHT2*],data_type:MIPI_RAW10 (0x2B),virtual_channel:[*ILD2_VC*]]",
+      "//$MV6_InterleavedData[isUsed:[*ILD_ELG_IS_USED3*],width:[*WIDTH*],height:[*ILD_ELG_HEIGHT3*],data_type:Embedded_Data (0x12),virtual_channel:[*ILD3_ELG_VC*]]",
+      "//$MV6_InterleavedData[isUsed:[*ILD_ELG_IS_USED4*],width:[*WIDTH*],height:[*ILD_ELG_HEIGHT4*],data_type:User_Defined_1 (0x30),virtual_channel:[*ILD4_ELG_VC*]]",
+      "//$MV6_Start[]"];
+
+    // \U0001f539 Extract variables
+    const combinedMVText = selectedIndexes.map(i => mergedGroups[i]).join("\n");
+    const regex = /\[\*(.*?)\*\]/g;
+    const uniqueVariablesFromMV = new Set();
+    let match;
+    while ((match = regex.exec(combinedMVText)) !== null) {
+      uniqueVariablesFromMV.add(match[1]);
+    }
+
+    const mergedSet = new Set([...uniqueVariablesFromMV, ...uniqueArray1]);
+    const mergedUniqueArray = [...mergedSet];
+    const missingVariables = [...uniqueVariablesFromMV].filter(v => !uniqueArray1.includes(v));
+
+    //  Step 6-7: Insert missing variables
+    if (missingVariables.length > 0) {
+      const startSerial = uniqueArray1.length + 1;
+
+      for (const tableName of tableNames) {
+        // Step 7a: Shift existing rows
+        await connection.query(
+          `UPDATE ?? SET serial_number = serial_number + ? WHERE serial_number >= ? ORDER BY serial_number DESC`,
+          [tableName, missingVariables.length, startSerial]
+        );
+
+        // Step 7b: Insert new variables
+        for (let i = 0; i < missingVariables.length; i++) {
+          const serial_number = startSerial + i;
+          const variable = missingVariables[i];
+          await connection.query(
+            `INSERT INTO ?? (serial_number, Tunning_param) VALUES (?, ?)`,
+            [tableName, serial_number, variable]
+          );
+        }
+      }
+
+      //  Step 8: Update mvvariables
+      await connection.query(
+        `UPDATE customer SET mvvariables = ? WHERE id = ?`,
+        [JSON.stringify(mergedUniqueArray), selectedCustomer]
+      );
+    }
+
+    // Step 9: Update selectedmv in setfile
+    const [result] = await connection.query(
+      "UPDATE setfile SET selectedmv = ? WHERE id = ?",
+      [selectedmv, file_id]
+    );
+
+    if (result.affectedRows === 0) {
+      await connection.rollback();
+      await connection.query("UNLOCK TABLES");
+      return res.status(404).json({ message: "File not found" });
+    }
+
+    // Commit and unlock
+    await connection.commit();
+    await connection.query("UNLOCK TABLES");
+
+    res.json({ message: "selectedmv updated successfully", mergedUniqueArray });
+  } catch (error) {
+    await connection.rollback();
+    await connection.query("UNLOCK TABLES");
+    console.error("Database error:", error);
+    res.status(500).json({ message: "Server error", error: error.message });
   } finally {
     connection.release();
   }
