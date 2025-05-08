@@ -317,7 +317,7 @@ const handleSaveNewRows = async () => {
     if (!tableName) continue;
 
     const isComment = typeof rowInState.Tunning_param === "string" &&
-                      rowInState.Tunning_param.trim().startsWith("//");
+    rowInState.Tunning_param.trim().startsWith("//");
 
     const tuningKey = rowInState.Tunning_param?.trim();
     const regmapValue = regmapContent?.[tuningKey]?.Value ?? null;
@@ -432,57 +432,61 @@ const handleSaveAllChanges = async () => {
 const Genratesetfile = async () => {
   const finalRowData = {};
  // console.log(tableData)
-  tableData.forEach(col => {
-    Object.keys(col).forEach(key => {
-      if (key !== "id" && key !== "serial_number" && key !== "setting_id" && key !== "Tunning_param") {
-        let keyoffile = col["Tunning_param"];
-        const val = col[key];
-       
-        if (!(keyoffile.startsWith("//"))) keyoffile = "WRITE #" + keyoffile;
-        const p = keyoffile + " " + val;
-        const nkey=col["setting_id"]+"$"+key;
-        // If the key doesn't exist in finalRowData, create an array
-        if (!finalRowData[nkey]) {
-          finalRowData[nkey] = [];
-        }
-        
-        // Push the new value into the array
-        finalRowData[nkey].push(p);
-      }
-    });
-  });
-  
-  
- //Create a downloadable text file for each key
-  for (const key in finalRowData) {
-   // console.log(key);
-    const [setting_id,name]=key.split("$");
-   // console.log(setting_id);
- //   console.log(name);
-     let Nname;
-     for(const key1 in selectedSetFiles){
-      console.log("key",key);
-       if(selectedSetFiles[key1].name==name&&selectedSetFiles[key1].setting_id==setting_id){
-        // console.log("key",key);
-        // console.log(selectedSetFiles[key1].full_name);
-        Nname=selectedSetFiles[key1].full_name;
-        break;
-       }
-     }
-   
-    const dataToWrite = finalRowData[key].join('\n'); // Join array values with new line
-    const blob = new Blob([dataToWrite], { type: 'text/plain' });
-    const url = URL.createObjectURL(blob);
+  for(const id in selectedSetFiles){
     
-    // Create a link element
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${Nname}.nset`; // Set the file name
-    document.body.appendChild(a);
-    a.click(); // Trigger the download
-    document.body.removeChild(a); // Clean up
-    URL.revokeObjectURL(url); // Free up memory
   }
+//   tableData.forEach(col => {
+//     Object.keys(col).forEach(key => {
+//       if (key !== "id" && key !== "serial_number" && key !== "setting_id" && key !== "Tunning_param") {
+//         let keyoffile = col["Tunning_param"];
+
+//         const val = col[key];
+       
+//         if (!(keyoffile.startsWith("//"))) keyoffile = "WRITE #" + keyoffile;
+//         const p = keyoffile + " " + val;
+//         const nkey=col["setting_id"]+"$"+key;
+//         // If the key doesn't exist in finalRowData, create an array
+//         if (!finalRowData[nkey]) {
+//           finalRowData[nkey] = [];
+//         }
+        
+//         // Push the new value into the array
+//         finalRowData[nkey].push(p);
+//       }
+//     });
+//   });
+  
+  
+//  //Create a downloadable text file for each key
+//   for (const key in finalRowData) {
+//    // console.log(key);
+//     const [setting_id,name]=key.split("$");
+//    // console.log(setting_id);
+//  //   console.log(name);
+//      let Nname;
+//      for(const key1 in selectedSetFiles){
+//       console.log("key",key);
+//        if(selectedSetFiles[key1].name==name&&selectedSetFiles[key1].setting_id==setting_id){
+//         // console.log("key",key);
+//         // console.log(selectedSetFiles[key1].full_name);
+//         Nname=selectedSetFiles[key1].full_name;
+//         break;
+//        }
+//      }
+   
+//     const dataToWrite = finalRowData[key].join('\n'); // Join array values with new line
+//     const blob = new Blob([dataToWrite], { type: 'text/plain' });
+//     const url = URL.createObjectURL(blob);
+    
+//     // Create a link element
+//     const a = document.createElement('a');
+//     a.href = url;
+//     a.download = `${Nname}.nset`; // Set the file name
+//     document.body.appendChild(a);
+//     a.click(); // Trigger the download
+//     document.body.removeChild(a); // Clean up
+//     URL.revokeObjectURL(url); // Free up memory
+//   }
 
   // console.log(finalRowData);
   // console.log(selectedSetFiles)
@@ -493,7 +497,7 @@ const Genratesetfile = async () => {
 
   
 return (
-  <div style={{ padding: "20px", maxWidth: "100%", maxHeight: '83vh' }}>
+  <div style={{ maxWidth: "100%", maxHeight: '83vh' }}>
        <button
       onClick={Genratesetfile}
       style={{
@@ -541,19 +545,19 @@ return (
         </button>
       )}
 
-      <div style={{ position: "relative", marginLeft: "30px", maxHeight: '82vh', overflowY: "auto" }}>
+      <div style={{ position: "relative", maxHeight: '82vh', overflowY: "auto" }}>
       <table style={{
         borderCollapse: "collapse",
         width: "100%",
         backgroundColor: "#fff",
         boxShadow: "0 0 10px rgba(0,0,0,0.1)",
         position: "relative",
-        marginLeft: "30px",
         border: '1px solid #ddd',
         overflowX: "auto"
       }}>
         <thead style={{ position: "sticky", top: 0, zIndex: 1 ,border: '1px solid #ddd'}}>
           <tr style={{ backgroundColor: "#f1f1f1",border: '1px solid #ddd' }}>
+          <th style={{ width: "50px" }}></th> {/* for + button */}
             <th style={{ padding: "12px", textAlign: "left",border: '1px solid #ddd' }}>Serial</th>
             {columns
               .filter(col => col !== "serial_number" && col !== "id")
@@ -563,7 +567,7 @@ return (
           </tr>
         </thead>
         <tbody>
-          {tableData.length > 0 && (
+          {/* {tableData.length > 0 && (
             <tr style={{ height: "0px", position: "relative" }}>
               <td colSpan={columns.length} style={{ padding: 0, position: "relative" }}>
               <div
@@ -591,11 +595,31 @@ return (
                 </div>
               </td>
             </tr>
-          )}
+          )} */}
 
           {tableData.map(row => (
             <React.Fragment key={row.id}>
-              <tr style={{ borderBottom: "1px solid #ddd",border: '1px solid #ddd' }}>
+              <tr>
+              <td style={{ textAlign: "center", position: "relative", minWidth: "30px"}}>
+                  <button
+                    onClick={() => handleAddRow(row)}
+                    style={{
+                      position: "absolute",
+                      bottom: "-12px",
+                      right: "3px",
+                      fontSize: "14px",
+                      padding: "4px 8px",
+                      borderRadius: "50%",
+                      border: "1px solid #ccc",
+                      backgroundColor: "#e9ecef",
+                      cursor: "pointer",
+                      lineHeight: "1",
+                      zIndex: 1
+                    }}
+                  >
+                    +
+                  </button>
+                </td>
                 <td style={{ padding: "10px" ,border: '1px solid #ddd'}}>{row.serial_number || "-"}</td>
                 {columns
                   .filter(col => col !== "serial_number" && col !== "id")
@@ -714,7 +738,7 @@ return (
                     transform: "translateY(-50%)"
                   }}
                 >
-                  <button
+                  {/* <button
                     onClick={() => handleAddRow(row)}
                     style={{
                       fontSize: "14px",
@@ -727,7 +751,7 @@ return (
                     }}
                   >
                     +
-                  </button>
+                  </button> */}
                   </div>
                 </td>
               </tr>

@@ -74,9 +74,14 @@ const GlobalFile = ({ globalData, setGlobalData }) => {
 
   const handleChange = (e, rowIndex, colName) => {
     const newValue = e.target.value;
+    const val=regmapContent?.[newValue]?.Value??"-";
+
+
     setGlobalData((prev) => {
       const updatedTable = [...prev.tableData];
       updatedTable[rowIndex][colName] = newValue;
+      updatedTable[rowIndex]["DefaultValue"]=val;
+      updatedTable[rowIndex]["Value"]=val;
       return { ...prev, tableData: updatedTable };
     });
   };
@@ -125,8 +130,9 @@ const GlobalFile = ({ globalData, setGlobalData }) => {
   };
 
   return (
-    <div style={{ padding: "20px" }}>
+    <div style={{ padding: "0px" }}>
       <h3 style={{ display: "inline-block", marginRight: "10px" }}>Global Settings</h3>
+      <h5 style={{ marginTop: "-10px", color: "#D36A6C"}}>For new global (if not exist) create a empty file, add initial comment and upload.</h5>
       <input type="file" accept=".nset" onChange={handleFileUpload} />
       <button onClick={() => parseUploadedFile(selectedFile)} style={{ marginLeft: "10px" }}>
         Parse File
@@ -137,10 +143,10 @@ const GlobalFile = ({ globalData, setGlobalData }) => {
 
       <div style={{ maxHeight: "78vh", overflowY: "auto", marginTop: "20px" }}>
         <table style={{ width: "100%", borderCollapse: "collapse", border: "1px solid #ddd" }}>
-          <thead style={{ position: "sticky", top: 0, zIndex: 1, backgroundColor: "#f1f1f1" }}>
+          <thead style={{ position: "sticky", top: 0, zIndex: 1, backgroundColor: "rgb(221, 221, 221)" }}>
             <tr>
               <th style={{ width: "50px" }}></th> {/* for + button */}
-              <th style={{ padding: "12px", border: "1px solid #ddd" }}>Tunning_param</th>
+              <th style={{ padding: "12px", border: "1px solid #ddd", minWidth: "400px" }}>Tunning_param</th>
               <th style={{ padding: "12px", border: "1px solid #ddd" }}>DefaultValue</th>
               <th style={{ padding: "12px", border: "1px solid #ddd" }}>Value</th>
               <th style={{ padding: "12px", border: "1px solid #ddd" }}>Actions</th>
@@ -149,10 +155,13 @@ const GlobalFile = ({ globalData, setGlobalData }) => {
           <tbody>
             {tableData.map((row, index) => (
               <tr key={index}>
-                <td style={{ border: "1px solid #ddd", textAlign: "center" }}>
+                <td style={{ textAlign: "center", position: "relative", minWidth: "30px" }}>
                   <button
                     onClick={() => handleAddRow(index)}
                     style={{
+                      position: "absolute",
+                      bottom: "-12px",
+                      right: "3px",
                       fontSize: "14px",
                       padding: "4px 8px",
                       borderRadius: "50%",
@@ -179,6 +188,10 @@ const GlobalFile = ({ globalData, setGlobalData }) => {
                         editingCell?.rowId === index && editingCell?.colName === col
                           ? "#fff3cd"
                           : "transparent",
+                      // maxWidth: "500px",
+                      wordWrap: "wrap",
+                      whiteSpace: "break-spaces",
+                      wordBreak: "break-all"
                     }}
                   >
                     {editingCell?.rowId === index && editingCell?.colName === col ? (
