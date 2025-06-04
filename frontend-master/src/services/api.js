@@ -37,12 +37,12 @@ export const fetchProjectById = async (projectId) => {
 };
 
 // Create a new project
-export const createProject = async (formData) => {
+export const createFullProject = async (formData) => {
   try {
-    //      formData.forEach((value, key) => {
-    //   console.log(key, value);  
-    //  });
-    const response = await axios.post(`${API_BASE_URL}/projects`, formData, {
+         formData.forEach((value, key) => {
+      console.log(key, value);  
+     });
+    const response = await axios.post(`${API_BASE_URL}/projects/createFullProject`, formData, {
       headers: { "Content-Type": "multipart/form-data", ...getAuthHeaders().headers },
     });
     return response.data;
@@ -63,12 +63,12 @@ export const fetchCustomers = async (projectId) => {
 };
 
 // Add a new customer to a project
-export const addCustomers = async (projectId, customers,selectedIndexes) => {
+export const addCustomers = async (projectId, customers,selectedIndexes,projectName) => {
   try {
     console.log("selectedIndexes",selectedIndexes);
     const response = await axios.post(
       `${API_BASE_URL}/customers`,
-      { projectId, customers,selectedIndexes },
+      { projectId, customers,selectedIndexes,projectName },
       getAuthHeaders()
     );
     return response.data;
@@ -145,13 +145,16 @@ export const uploadRegmap = async ({ file, projectId, name }) => {
     throw error.response?.data?.message || "Regmap upload failed.";
   }
 };
-export const addSetting = async (customerId, name, tableName) => {
+
+export const addSetting = async (customerId, name, tableName,projectName,customerName) => {
   console.log("setiing",customerId, name, tableName);
   try {
     const response = await axios.post(`${API_BASE_URL}/settings/add`, {
       customer_id: customerId,
       name,
       table_name: tableName,
+      projectName,
+      customerName,
     },getAuthHeaders());
 
     return response.data;
@@ -171,9 +174,9 @@ export const getCustomerById = async (customerId) => {
     return null;
   }
 };
-export const fetchSetFilesbyMode = async (modeId) => {
+export const fetchSetFilesbyMode = async (modeId,tableId) => {
   try {
-    const response = await fetch(`${API_BASE_URL}/setfile/getSetFiles?mode_id=${modeId}`,getAuthHeaders());
+    const response = await fetch(`${API_BASE_URL}/setfile/getSetFiles?mode_id=${modeId}&table_id=${tableId}`,getAuthHeaders());
     const data = await response.json();
     return data;
   } catch (error) {
@@ -215,11 +218,11 @@ export const fetchTableData = async (tableName, columnName) => {
 };
  
 
-export const updateRowAPI = async (tableName, id, columnName, value,regmapEntry) => {
+export const updateRowAPI = async (updates) => {
   try {
     const response = await axios.post(
       `${API_BASE_URL}/setfile/update-row`,
-      { tableName, id, columnName, value,regmapEntry },
+      updates,
       {
         headers: { ...getAuthHeaders().headers },
       }
@@ -231,12 +234,12 @@ export const updateRowAPI = async (tableName, id, columnName, value,regmapEntry)
   }
 };
 
-export const addRowAPI = async (tableName, referenceId, position, rowData,defaultValue) => {
+export const addRowAPI = async (insertions) => {
   
   try {
     const response = await axios.post(
       `${API_BASE_URL}/setfile/add-row`,
-      { tableName, referenceId, position, rowData,defaultValue },
+      insertions,
       {
         headers: { ...getAuthHeaders().headers },
       }
@@ -280,11 +283,27 @@ export const fetchRegmap = async (projectId) => {
   }
 };
 
-export const deleteRowAPI = async (tableName, rowId) => {
+export const deleteRowAPI = async (deletions) => {
   try {
     const response = await axios.post(
       `${API_BASE_URL}/setfile/delete-row`,
-      { tableName, rowId },
+      deletions,
+      {
+        headers: { ...getAuthHeaders().headers },
+      }
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Error deleting row:", error);
+    return { success: false };
+  }
+};
+export const FileDatatableSaveall = async (updates,deletions,insertions,projectName,customerName,selectedMkclTable,mvvariables) => {
+  //console.log("syfcysd",defaultValue);
+  try {
+    const response = await axios.post(
+      `${API_BASE_URL}/setfile/FileDatatableSaveall`,
+    {updates,deletions,insertions,projectName,customerName,selectedMkclTable,mvvariables},
       {
         headers: { ...getAuthHeaders().headers },
       }
@@ -332,3 +351,58 @@ export const updateMVHeaderForCustomer = async (customerId, selectedIndexes) => 
     throw error.response?.data?.message || "Failed to update MV headers.";
   }
 }
+export const cloneFromsetfile = async (tableName,setfilePrefix, existingcolumnName) => {
+  try {
+    const response = await axios.post(
+      `${API_BASE_URL}/setfile/clone-from`,
+      {tableName,setfilePrefix, existingcolumnName },
+      getAuthHeaders()
+    );
+    return response.data;
+  } catch (error) {
+    throw error.response?.data?.message || "Failed to update MV headers.";
+  }
+}
+export const addSetfile = async (mode_id,setting_id,setfilePrefix,generatedSetfileName,selectedmv) => {
+  try {
+    const response = await axios.post(
+      `${API_BASE_URL}/setfile/add-setfile`,
+      {mode_id,setting_id,setfilePrefix,generatedSetfileName,selectedmv },
+      getAuthHeaders()
+    );
+    return response.data;
+  } catch (error) {
+    throw error.response?.data?.message || "Failed to update MV headers.";
+  }
+}
+export const cloneFromAny = async (selectedCustomer,selectedIndexes,table_Nametoupdate,tableData,setfilePrefix) => {
+  try {
+    const response = await axios.post(
+      `${API_BASE_URL}/setfile/cloneFromAny`,
+      {selectedCustomer,selectedIndexes,table_Nametoupdate,tableData,setfilePrefix },
+      getAuthHeaders()
+    );
+    return response.data;
+  } catch (error) {
+    throw error.response?.data?.message || "Failed to update MV headers.";
+  }
+}
+export const fetchTableDataFornew = async (tableName) => {
+  console.log("tableName:", tableName);
+ 
+
+  try {
+    const response = await axios.post(
+      `${API_BASE_URL}/setfile/fetchTableDataFornew`,
+      { tableName }, // Send as request body
+      {
+        headers: { ...getAuthHeaders().headers }, // Include authentication headers
+      }
+    );
+
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching table data:", error);
+    throw error;
+  }
+};

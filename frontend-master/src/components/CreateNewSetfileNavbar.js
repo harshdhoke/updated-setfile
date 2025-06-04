@@ -17,37 +17,55 @@ import AddMkclTableModal from "./AddMkclTableModal";
 import "../styles/CreateNewSetfileNavbar.css";
 const mergedGroups = [
   "//$MV4[MCLK:[*MCLK*],mipi_phy_type:[*PHY_TYPE*],mipi_lane:[*PHY_LANE*],mipi_datarate:[*MIPI_DATA_RATE*]]",
-  "//$MV4_CPHY_LRTE[enable:[*LRTE_EN*],longPacketSpace:2,shortPacketSpace:2]",
-  "//$MV4_Scramble[enable:[*SCRAMBLE_EN*]]",
-  "//$MV4_MainData[width:[*WIDTH*],height:[*HEIGHT*],data_type:[*DATA_TYPE*],virtual_channel:[*MAIN_VC*]]",
-  "//$MV4_InterleavedData[isUsed:[*ILD_IS_USED_LCG*],width:[*ILD_WIDTH_LCG*],height:[*ILD_HEIGHT_LCG*],data_type:[*DATA_TYPE*],virtual_channel:[*ILD_LCG_VC*]]",
-  "//$MV4_InterleavedData[isUsed:[*ILD_IS_USED1*],width:[*ILD_WIDTH1*],height:[*ILD_HEIGHT1*],data_type:MIPI_RAW10 (0x2B),virtual_channel:[*ILD1_VC*]]",
-  "//$MV4_InterleavedData[isUsed:[*ILD_IS_USED2*],width:[*ILD_WIDTH2*],height:[*ILD_HEIGHT2*],data_type:MIPI_RAW10 (0x2B),virtual_channel:[*ILD2_VC*]]",
-  "//$MV4_InterleavedData[isUsed:[*ILD_ELG_IS_USED3*],width:[*WIDTH*],height:[*ILD_ELG_HEIGHT3*],data_type:Embedded_Data (0x12),virtual_channel:[*ILD3_ELG_VC*]]",
-  "//$MV4_InterleavedData[isUsed:[*ILD_ELG_IS_USED4*],width:[*WIDTH*],height:[*ILD_ELG_HEIGHT4*],data_type:User_Defined_1 (0x30),virtual_channel:[*ILD4_ELG_VC*]]",
-  "//$MV4_Start[]",
-  "//$MV6[MCLK:[*MCLK*],mipi_phy_type:[*PHY_TYPE*],mipi_lane:[*PHY_LANE*],mipi_datarate:[*MIPI_DATA_RATE*]]",
-  "//$MV6_CPHY_LRTE[enable:[*LRTE_EN*],longPacketSpace:2,shortPacketSpace:2]",
-  "//$MV6_Scramble[enable:[*SCRAMBLE_EN*]]",
-  "//$MV6_MainData[width:[*WIDTH*],height:[*HEIGHT*],data_type:[*DATA_TYPE*],virtual_channel:[*MAIN_VC*]]",
-  "//$MV6_InterleavedData[isUsed:[*ILD_IS_USED_LCG*],width:[*ILD_WIDTH_LCG*],height:[*ILD_HEIGHT_LCG*],data_type:[*DATA_TYPE*],virtual_channel:[*ILD_LCG_VC*]]",
-  "//$MV6_InterleavedData[isUsed:[*ILD_IS_USED1*],width:[*ILD_WIDTH1*],height:[*ILD_HEIGHT1*],data_type:MIPI_RAW10 (0x2B),virtual_channel:[*ILD1_VC*]]",
-  "//$MV6_InterleavedData[isUsed:[*ILD_IS_USED2*],width:[*ILD_WIDTH2*],height:[*ILD_HEIGHT2*],data_type:MIPI_RAW10 (0x2B),virtual_channel:[*ILD2_VC*]]",
-  "//$MV6_InterleavedData[isUsed:[*ILD_ELG_IS_USED3*],width:[*WIDTH*],height:[*ILD_ELG_HEIGHT3*],data_type:Embedded_Data (0x12),virtual_channel:[*ILD3_ELG_VC*]]",
-  "//$MV6_InterleavedData[isUsed:[*ILD_ELG_IS_USED4*],width:[*WIDTH*],height:[*ILD_ELG_HEIGHT4*],data_type:User_Defined_1 (0x30),virtual_channel:[*ILD4_ELG_VC*]]",
-  "//$MV6_Start[]"
+    "//$MV4_Sensor[fps:[*FPS*]]",
+    "//$MV4_CPHY_LRTE[enable:[*LRTE_EN*],longPacketSpace:2,shortPacketSpace:2]]",
+    "//$MV4_Scramble[enable:[*SCRAMBLE_EN*]]",
+    "//$MV4_MainData[width:[*WIDTH*],height:[*HEIGHT*],data_type:[*DATA_TYPE*],virtual_channel:[*MAIN_VC*]]",
+    "//$MV4_InterleavedData[isUsed:[*ILD_IS_USED_LCG*],width:[*ILD_WIDTH_LCG*],height:[*ILD_HEIGHT_LCG*],data_type:[*DATA_TYPE*],virtual_channel:[*ILD_LCG_VC*]]",
+    "//$MV4_InterleavedData[isUsed:[*ILD_IS_USED1*],width:[*ILD_WIDTH1*],height:[*ILD_HEIGHT1*],data_type:MIPI_RAW10 (0x2B),virtual_channel:[*ILD1_VC*]]",
+    "//$MV4_InterleavedData[isUsed:[*ILD_IS_USED2*],width:[*ILD_WIDTH2*],height:[*ILD_HEIGHT2*],data_type:MIPI_RAW10 (0x2B),virtual_channel:[*ILD2_VC*]]",
+    "//$MV4_InterleavedData[isUsed:[*ILD_ELG_IS_USED3*],width:[*WIDTH*],height:[*ILD_ELG_HEIGHT3*],data_type:Embedded_Data (0x12),virtual_channel:[*ILD3_ELG_VC*]]",
+    "//$MV4_InterleavedData[isUsed:[*ILD_ELG_IS_USED4*],width:[*WIDTH*],height:[*ILD_ELG_HEIGHT4*],data_type:User_Defined_1 (0x30),virtual_channel:[*ILD4_ELG_VC*]]",
+    "//$MV4_SFR[address:[*SFR_ADDRESS_1*],data:[*SFR_DATA_1*]]",
+    "//$MV4_SFR[address:[*SFR_ADDRESS_2*],data:[*SFR_DATA_2*]]",
+    "//$MV4_SFR[address:[*SFR_ADDRESS_3*],data:[*SFR_DATA_3*]]",
+    "//$MV4_SFR[address:[*SFR_ADDRESS_4*],data:[*SFR_DATA_4*]]",
+    "//$MV4_SFR[address:[*SFR_ADDRESS_5*],data:[*SFR_DATA_5*]]",
+    "//$MV4_SFR[address:[*SFR_ADDRESS_6*],data:[*SFR_DATA_6*]]",
+    "//$MV4_SFR[address:[*SFR_ADDRESS_7*],data:[*SFR_DATA_7*]]",
+    "//$MV4_Start[]",
+
+    "//$MV6[MCLK:[*MCLK*],mipi_phy_type:[*PHY_TYPE*],mipi_lane:[*PHY_LANE*],mipi_datarate:[*MIPI_DATA_RATE*]]",
+    "//$MV6_Sensor[fps:[*FPS*]]",
+    "//$MV6_CPHY_LRTE[enable:[*LRTE_EN*],longPacketSpace:2,shortPacketSpace:2]]",
+    "//$MV6_Scramble[enable:[*SCRAMBLE_EN*]]",
+    "//$MV6_MainData[width:[*WIDTH*],height:[*HEIGHT*],data_type:[*DATA_TYPE*],virtual_channel:[*MAIN_VC*]]",
+    "//$MV6_InterleavedData[isUsed:[*ILD_IS_USED_LCG*],width:[*ILD_WIDTH_LCG*],height:[*ILD_HEIGHT_LCG*],data_type:[*DATA_TYPE*],virtual_channel:[*ILD_LCG_VC*]]",
+    "//$MV6_InterleavedData[isUsed:[*ILD_IS_USED1*],width:[*ILD_WIDTH1*],height:[*ILD_HEIGHT1*],data_type:MIPI_RAW10 (0x2B),virtual_channel:[*ILD1_VC*]]",
+    "//$MV6_InterleavedData[isUsed:[*ILD_IS_USED2*],width:[*ILD_WIDTH2*],height:[*ILD_HEIGHT2*],data_type:MIPI_RAW10 (0x2B),virtual_channel:[*ILD2_VC*]]",
+    "//$MV6_InterleavedData[isUsed:[*ILD_ELG_IS_USED3*],width:[*WIDTH*],height:[*ILD_ELG_HEIGHT3*],data_type:Embedded_Data (0x12),virtual_channel:[*ILD3_ELG_VC*]]",
+    "//$MV6_InterleavedData[isUsed:[*ILD_ELG_IS_USED4*],width:[*WIDTH*],height:[*ILD_ELG_HEIGHT4*],data_type:User_Defined_1 (0x30),virtual_channel:[*ILD4_ELG_VC*]]",
+    "//$MV6_SFR[address:[*SFR_ADDRESS_1*],data:[*SFR_DATA_1*]]",
+    "//$MV6_SFR[address:[*SFR_ADDRESS_2*],data:[*SFR_DATA_2*]]",
+    "//$MV6_SFR[address:[*SFR_ADDRESS_3*],data:[*SFR_DATA_3*]]",
+    "//$MV6_SFR[address:[*SFR_ADDRESS_4*],data:[*SFR_DATA_4*]]",
+    "//$MV6_SFR[address:[*SFR_ADDRESS_5*],data:[*SFR_DATA_5*]]",
+    "//$MV6_SFR[address:[*SFR_ADDRESS_6*],data:[*SFR_DATA_6*]]",
+    "//$MV6_SFR[address:[*SFR_ADDRESS_7*],data:[*SFR_DATA_7*]]",
+    "//$MV6_Start[]"
 ];
 
-const CreateNewSetfileNavbar = ({style, selectedModes, setSelectedModes }) => {
+const CreateNewSetfileNavbar = ({style, setfilePrefix ,setSetfilePrefix,generatedSetfileName,setgeneratedSetfileName,selectedModes,setSelectedModes,selectedMkclTable,setSelectedMkclTable,selectedCustomer,setSelectedCustomer,selectedMkclTableKey,setSelectedMkclTableKey}) => {
   const navigate = useNavigate();
   const user = JSON.parse(localStorage.getItem("user"));
   const projectName = localStorage.getItem("projectName") || "No Project Selected";
   const projectId = localStorage.getItem("projectId");
-
+  //const [selectedModes, setSelectedModes] = useState(null);
   const [selectedFile, setSelectedFile] = useState(null);
   const [message, setMessage] = useState("");
   const [customers, setCustomers] = useState([]);
-  const [selectedCustomer, setSelectedCustomer] = useState("");
+  // const [selectedCustomer, setSelectedCustomer] = useState("");
+  //const [selectedMkclTableKey,setSelectedMkclTableKey]=useState("");
   const [selectedCustomerName, setSelectedCustomerName] = useState("");
   const [isModalOpen, setModalOpen] = useState(false);
   const [showAlert, setShowAlert] = useState(false);
@@ -55,13 +73,12 @@ const CreateNewSetfileNavbar = ({style, selectedModes, setSelectedModes }) => {
   const [uniqueVariables, setUniqueVariables] = useState([]);
   const [isModeModalOpen, setModeModalOpen] = useState(false);
   const [mkclTables, setMkclTables] = useState([]);
-  const [selectedMkclTable, setSelectedMkclTable] = useState("");
+  //const [selectedMkclTable, setSelectedMkclTable] = useState("");
   const [ismkclModalOpen, setmkclModalOpen] = useState(false);
-  const [setfilePrefix, setSetfilePrefix] = useState("");
   const [setfileSuffix, setSetfileSuffix] = useState("");
   const [fps, setFps] = useState("");
   const [resolution, setResolution] = useState("");
-
+  
   const handleLogout = () => {
     ["token", "user", "projectId", "projectName"].forEach((item) =>
       localStorage.removeItem(item)
@@ -115,7 +132,16 @@ const CreateNewSetfileNavbar = ({style, selectedModes, setSelectedModes }) => {
     setSelectedModes("");
     setSelectedMkclTable("");
   };
-
+  const handleMkclChange=(event)=>{
+    const selectedname=event.target.value;
+   // console.log(selectedname);
+    setSelectedMkclTable(selectedname);
+    if(selectedname){
+    const selectedTable = mkclTables.find((table) => table.table_name == selectedname);
+   // console.log("ziuuu",selectedTable)
+    setSelectedMkclTableKey(selectedTable.id);
+    }
+  }
   useEffect(() => {
     if (projectId) {
       fetchProjectById(projectId).then((data) => console.log(data));
@@ -176,10 +202,14 @@ useEffect(() => {
   if(uniqueVariables.length)
   console.log("Updated unique variables:", uniqueVariables);
 }, [uniqueVariables]);
-  const generatedSetfileName = `${setfilePrefix || "prefix"}_${selectedCustomerName || "customer"}_${projectName}_${(modes.find(m => String(m.id) === String(selectedModes))?.name || "mode")}_${resolution || "res"}_${fps || "fps"}${setfileSuffix ? `_${setfileSuffix}` : ''}.nset`;
-
+ // const generatedSetfileName = `${setfilePrefix || "prefix"}_${selectedCustomerName || "customer"}_${projectName}_${(modes.find(m => String(m.id) === String(selectedModes))?.name || "mode")}_${resolution || "res"}_${fps || "fps"}${setfileSuffix ? `_${setfileSuffix}` : ''}.nset`;
+ 
+  if(setfilePrefix!=""&&fps!=""&&selectedCustomerName!=""&&projectName!=""&&(modes.find(m => String(m.id) === String(selectedModes))?.name)!=""&&resolution!=""){
+     setgeneratedSetfileName( `${setfilePrefix || "prefix"}_${selectedCustomerName || "customer"}_${projectName}_${(modes.find(m => String(m.id) === String(selectedModes))?.name || "mode")}_${resolution || "res"}_${fps || "fps"}${setfileSuffix ? `_${setfileSuffix}` : ''}.nset`);
+  }
   return (
     <nav style={style}>
+      {/* <div>{selectedMkclTable}</div> */}
     <nav className="create-new-setfile-navbar">
       <div className="create-new-setfile-navbar-top">
         <div className="create-new-setfile-user-project">
@@ -246,7 +276,7 @@ useEffect(() => {
       <div className="create-new-setfile-section">
         <div className="create-new-setfile-dropdown-row">
           <label className="create-new-setfile-label">MKCL Table:</label>
-          <select className="create-new-setfile-select" value={selectedMkclTable} onChange={(e) => setSelectedMkclTable(e.target.value)}>
+          <select className="create-new-setfile-select" value={selectedMkclTable} onChange={handleMkclChange}>
             <option value="">Select MIPI Datarate</option>
             {mkclTables.map((table) => (
               <option key={table.table_name} value={table.table_name}>{table.name}</option>

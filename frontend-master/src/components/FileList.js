@@ -2,14 +2,15 @@ import React, { useEffect, useState } from "react";
 import { fetchSetFilesbyMode,markFileAsDeleted } from "../services/api";
 import "../styles/FileList.css";
 import MVHeaderSelector from "./MVHeaderSelector";
-const FileList = ({ selectedModes, selectedSetFiles, setSelectedSetFiles,selectedCustomer }) => {
+const FileList = ({ selectedModes, selectedSetFiles, setSelectedSetFiles,selectedCustomer,selectedMkclTable }) => {
   const [fileData, setFileData] = useState([]); // Store all setfiles across modes
   const [showMVModal, setShowMVModal] = useState(false);
   const [currentEditingFile, setCurrentEditingFile] = useState(null);
-
+  const [showmvbtn,setshowmvbtn]=useState(false);
+  const[showdelbtn,setshowdelbtn]=useState(false);
   useEffect(() => {
     const fetchData = async () => {
-      if (!Array.isArray(selectedModes) || selectedModes.length === 0||selectedModes==null) {
+      if (!Array.isArray(selectedModes) || selectedModes.length === 0||selectedModes==null||selectedMkclTable=="") {
         setFileData([]);
         setSelectedSetFiles({});
         return;
@@ -17,7 +18,7 @@ const FileList = ({ selectedModes, selectedSetFiles, setSelectedSetFiles,selecte
       console.log("customerformfile",selectedCustomer);
       const newFileData = [];
       for (const mode of selectedModes) {
-        const data = await fetchSetFilesbyMode(mode.id);
+        const data = await fetchSetFilesbyMode(mode.id,selectedMkclTable);
         if (data.files) {
           newFileData.push({ mode, files: data.files });
         }
@@ -40,7 +41,7 @@ const FileList = ({ selectedModes, selectedSetFiles, setSelectedSetFiles,selecte
     };
 
     fetchData();
-  }, [selectedModes, setSelectedSetFiles]);
+  }, [selectedModes, setSelectedSetFiles,selectedMkclTable]);
 
   const handleCheckboxChange = (file) => {
     setSelectedSetFiles((prev) => {
@@ -114,6 +115,12 @@ const FileList = ({ selectedModes, selectedSetFiles, setSelectedSetFiles,selecte
   
   return (
     <div>
+      <button className="delete-button" style={{marginTop: "10px"}}  onClick={()=>setshowmvbtn(!showmvbtn)}>
+        show MV
+      </button>
+      <button  className="delete-button" onClick={()=>setshowdelbtn(!showdelbtn)}>
+        show delete
+      </button>
       <ul className="mode-list1">
         {fileData.map(({ mode, files }) => (
           <li key={mode.id} className="mode-item1">
@@ -128,15 +135,16 @@ const FileList = ({ selectedModes, selectedSetFiles, setSelectedSetFiles,selecte
                     onChange={() => handleCheckboxChange(file)}
                   />
                   <label htmlFor={file.id}>{file.full_name}</label>
-                  <button className="delete-button" onClick={() => openMVEditor(file)}>
+                  { showmvbtn&&<button className="delete-button" onClick={() => openMVEditor(file)}>
                     MV
-                  </button>
-                  <button
+                  </button>}
+                 
+                 {showdelbtn&& <button
                     className="delete-button"
                     onClick={() => handleDeleteFile(file)}
                   >
                     Delete
-                  </button>
+                  </button>}
                 </li>
               ))}
             </ul>

@@ -11,6 +11,7 @@ const Dashboard = () => {
   const [selectedCustomer, setSelectedCustomer] = useState(null);
   const [selectedModes, setSelectedModes] = useState(null);
   const [selectedSetFiles, setSelectedSetFiles] = useState({});
+  const [selectedMkclTable, setSelectedMkclTable] = useState("");
 
   const [globalData, setGlobalData] = useState({
     tableData: [],
@@ -28,17 +29,22 @@ const Dashboard = () => {
         setSelectedModes={setSelectedModes}
         selectedCustomer={selectedCustomer}
         setSelectedCustomer={setSelectedCustomer}
+        selectedMkclTable={selectedMkclTable}
+        setSelectedMkclTable={setSelectedMkclTable}
       />
      <div style={{ padding: "20px", maxWidth: "100%",overflowY:"auto"}}>
       <div className={`dashboard-container ${showGlobal ? "" : "expanded"} ${showFileList ? "" : "expanded-filelist"}`}>
         {/* Editable File Data Table */}
         <div className="section data-table">
-          <FileDataTable selectedSetFiles={selectedSetFiles} />
+          <FileDataTable selectedSetFiles={selectedSetFiles}
+          selectedCustomer={selectedCustomer}
+          selectedMkclTable={selectedMkclTable}
+        />
         </div>
 
         {/* File List */}
         {showFileList && (
-          <div className="section file-list">
+          <div className="section file-list" style={{display:"flex"}}>
             <button
               className="toggle-btn filelist"
               onClick={() => setShowFileList(false)} // Hide File List
@@ -50,6 +56,7 @@ const Dashboard = () => {
               selectedSetFiles={selectedSetFiles}
               setSelectedSetFiles={setSelectedSetFiles}
               selectedCustomer={selectedCustomer}
+              selectedMkclTable={selectedMkclTable}
             />
           </div>
         )}
@@ -63,9 +70,6 @@ const Dashboard = () => {
             <span className="toggle-icon">+</span>
             
           </button>
-           
-          
-          
         )}
 
         {/* Global Data Section */}

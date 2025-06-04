@@ -13,29 +13,46 @@ import {
 } from "../services/api";
 import EditCustomerModal from "./EditCustomerModal";
 const mergedGroups = [
-  "//$MV4[MCLK:[*MCLK*],mipi_phy_type:[*PHY_TYPE*],mipi_lane:[*PHY_LANE*],mipi_datarate:[*MIPI_DATA_RATE*]]",
-  "//$MV4_CPHY_LRTE[enable:[*LRTE_EN*],longPacketSpace:2,shortPacketSpace:2]",
-  "//$MV4_Scramble[enable:[*SCRAMBLE_EN*]]",
-  "//$MV4_MainData[width:[*WIDTH*],height:[*HEIGHT*],data_type:[*DATA_TYPE*],virtual_channel:[*MAIN_VC*]]",
-  "//$MV4_InterleavedData[isUsed:[*ILD_IS_USED_LCG*],width:[*ILD_WIDTH_LCG*],height:[*ILD_HEIGHT_LCG*],data_type:[*DATA_TYPE*],virtual_channel:[*ILD_LCG_VC*]]",
-  "//$MV4_InterleavedData[isUsed:[*ILD_IS_USED1*],width:[*ILD_WIDTH1*],height:[*ILD_HEIGHT1*],data_type:MIPI_RAW10 (0x2B),virtual_channel:[*ILD1_VC*]]",
-  "//$MV4_InterleavedData[isUsed:[*ILD_IS_USED2*],width:[*ILD_WIDTH2*],height:[*ILD_HEIGHT2*],data_type:MIPI_RAW10 (0x2B),virtual_channel:[*ILD2_VC*]]",
-  "//$MV4_InterleavedData[isUsed:[*ILD_ELG_IS_USED3*],width:[*WIDTH*],height:[*ILD_ELG_HEIGHT3*],data_type:Embedded_Data (0x12),virtual_channel:[*ILD3_ELG_VC*]]",
-  "//$MV4_InterleavedData[isUsed:[*ILD_ELG_IS_USED4*],width:[*WIDTH*],height:[*ILD_ELG_HEIGHT4*],data_type:User_Defined_1 (0x30),virtual_channel:[*ILD4_ELG_VC*]]",
-  "//$MV4_Start[]",
-  "//$MV6[MCLK:[*MCLK*],mipi_phy_type:[*PHY_TYPE*],mipi_lane:[*PHY_LANE*],mipi_datarate:[*MIPI_DATA_RATE*]]",
-  "//$MV6_CPHY_LRTE[enable:[*LRTE_EN*],longPacketSpace:2,shortPacketSpace:2]",
-  "//$MV6_Scramble[enable:[*SCRAMBLE_EN*]]",
-  "//$MV6_MainData[width:[*WIDTH*],height:[*HEIGHT*],data_type:[*DATA_TYPE*],virtual_channel:[*MAIN_VC*]]",
-  "//$MV6_InterleavedData[isUsed:[*ILD_IS_USED_LCG*],width:[*ILD_WIDTH_LCG*],height:[*ILD_HEIGHT_LCG*],data_type:[*DATA_TYPE*],virtual_channel:[*ILD_LCG_VC*]]",
-  "//$MV6_InterleavedData[isUsed:[*ILD_IS_USED1*],width:[*ILD_WIDTH1*],height:[*ILD_HEIGHT1*],data_type:MIPI_RAW10 (0x2B),virtual_channel:[*ILD1_VC*]]",
-  "//$MV6_InterleavedData[isUsed:[*ILD_IS_USED2*],width:[*ILD_WIDTH2*],height:[*ILD_HEIGHT2*],data_type:MIPI_RAW10 (0x2B),virtual_channel:[*ILD2_VC*]]",
-  "//$MV6_InterleavedData[isUsed:[*ILD_ELG_IS_USED3*],width:[*WIDTH*],height:[*ILD_ELG_HEIGHT3*],data_type:Embedded_Data (0x12),virtual_channel:[*ILD3_ELG_VC*]]",
-  "//$MV6_InterleavedData[isUsed:[*ILD_ELG_IS_USED4*],width:[*WIDTH*],height:[*ILD_ELG_HEIGHT4*],data_type:User_Defined_1 (0x30),virtual_channel:[*ILD4_ELG_VC*]]",
-  "//$MV6_Start[]"
+    "//$MV4[MCLK:[*MCLK*],mipi_phy_type:[*PHY_TYPE*],mipi_lane:[*PHY_LANE*],mipi_datarate:[*MIPI_DATA_RATE*]]",
+    "//$MV4_Sensor[fps:[*FPS*]]",
+    "//$MV4_CPHY_LRTE[enable:[*LRTE_EN*],longPacketSpace:2,shortPacketSpace:2]]",
+    "//$MV4_Scramble[enable:[*SCRAMBLE_EN*]]",
+    "//$MV4_MainData[width:[*WIDTH*],height:[*HEIGHT*],data_type:[*DATA_TYPE*],virtual_channel:[*MAIN_VC*]]",
+    "//$MV4_InterleavedData[isUsed:[*ILD_IS_USED_LCG*],width:[*ILD_WIDTH_LCG*],height:[*ILD_HEIGHT_LCG*],data_type:[*DATA_TYPE*],virtual_channel:[*ILD_LCG_VC*]]",
+    "//$MV4_InterleavedData[isUsed:[*ILD_IS_USED1*],width:[*ILD_WIDTH1*],height:[*ILD_HEIGHT1*],data_type:MIPI_RAW10 (0x2B),virtual_channel:[*ILD1_VC*]]",
+    "//$MV4_InterleavedData[isUsed:[*ILD_IS_USED2*],width:[*ILD_WIDTH2*],height:[*ILD_HEIGHT2*],data_type:MIPI_RAW10 (0x2B),virtual_channel:[*ILD2_VC*]]",
+    "//$MV4_InterleavedData[isUsed:[*ILD_ELG_IS_USED3*],width:[*WIDTH*],height:[*ILD_ELG_HEIGHT3*],data_type:Embedded_Data (0x12),virtual_channel:[*ILD3_ELG_VC*]]",
+    "//$MV4_InterleavedData[isUsed:[*ILD_ELG_IS_USED4*],width:[*WIDTH*],height:[*ILD_ELG_HEIGHT4*],data_type:User_Defined_1 (0x30),virtual_channel:[*ILD4_ELG_VC*]]",
+    "//$MV4_SFR[address:[*SFR_ADDRESS_1*],data:[*SFR_DATA_1*]]",
+    "//$MV4_SFR[address:[*SFR_ADDRESS_2*],data:[*SFR_DATA_2*]]",
+    "//$MV4_SFR[address:[*SFR_ADDRESS_3*],data:[*SFR_DATA_3*]]",
+    "//$MV4_SFR[address:[*SFR_ADDRESS_4*],data:[*SFR_DATA_4*]]",
+    "//$MV4_SFR[address:[*SFR_ADDRESS_5*],data:[*SFR_DATA_5*]]",
+    "//$MV4_SFR[address:[*SFR_ADDRESS_6*],data:[*SFR_DATA_6*]]",
+    "//$MV4_SFR[address:[*SFR_ADDRESS_7*],data:[*SFR_DATA_7*]]",
+    "//$MV4_Start[]",
+
+    "//$MV6[MCLK:[*MCLK*],mipi_phy_type:[*PHY_TYPE*],mipi_lane:[*PHY_LANE*],mipi_datarate:[*MIPI_DATA_RATE*]]",
+    "//$MV6_Sensor[fps:[*FPS*]]",
+    "//$MV6_CPHY_LRTE[enable:[*LRTE_EN*],longPacketSpace:2,shortPacketSpace:2]]",
+    "//$MV6_Scramble[enable:[*SCRAMBLE_EN*]]",
+    "//$MV6_MainData[width:[*WIDTH*],height:[*HEIGHT*],data_type:[*DATA_TYPE*],virtual_channel:[*MAIN_VC*]]",
+    "//$MV6_InterleavedData[isUsed:[*ILD_IS_USED_LCG*],width:[*ILD_WIDTH_LCG*],height:[*ILD_HEIGHT_LCG*],data_type:[*DATA_TYPE*],virtual_channel:[*ILD_LCG_VC*]]",
+    "//$MV6_InterleavedData[isUsed:[*ILD_IS_USED1*],width:[*ILD_WIDTH1*],height:[*ILD_HEIGHT1*],data_type:MIPI_RAW10 (0x2B),virtual_channel:[*ILD1_VC*]]",
+    "//$MV6_InterleavedData[isUsed:[*ILD_IS_USED2*],width:[*ILD_WIDTH2*],height:[*ILD_HEIGHT2*],data_type:MIPI_RAW10 (0x2B),virtual_channel:[*ILD2_VC*]]",
+    "//$MV6_InterleavedData[isUsed:[*ILD_ELG_IS_USED3*],width:[*WIDTH*],height:[*ILD_ELG_HEIGHT3*],data_type:Embedded_Data (0x12),virtual_channel:[*ILD3_ELG_VC*]]",
+    "//$MV6_InterleavedData[isUsed:[*ILD_ELG_IS_USED4*],width:[*WIDTH*],height:[*ILD_ELG_HEIGHT4*],data_type:User_Defined_1 (0x30),virtual_channel:[*ILD4_ELG_VC*]]",
+    "//$MV6_SFR[address:[*SFR_ADDRESS_1*],data:[*SFR_DATA_1*]]",
+    "//$MV6_SFR[address:[*SFR_ADDRESS_2*],data:[*SFR_DATA_2*]]",
+    "//$MV6_SFR[address:[*SFR_ADDRESS_3*],data:[*SFR_DATA_3*]]",
+    "//$MV6_SFR[address:[*SFR_ADDRESS_4*],data:[*SFR_DATA_4*]]",
+    "//$MV6_SFR[address:[*SFR_ADDRESS_5*],data:[*SFR_DATA_5*]]",
+    "//$MV6_SFR[address:[*SFR_ADDRESS_6*],data:[*SFR_DATA_6*]]",
+    "//$MV6_SFR[address:[*SFR_ADDRESS_7*],data:[*SFR_DATA_7*]]",
+    "//$MV6_Start[]"
 ];
 
-const Navbar = ({className, selectedModes, setSelectedModes, selectedCustomer, setSelectedCustomer }) => {
+const Navbar = ({className, selectedModes, setSelectedModes, selectedCustomer, setSelectedCustomer,selectedMkclTable,setSelectedMkclTable }) => {
   const navigate = useNavigate();
   const user = JSON.parse(localStorage.getItem("user"));
   const projectName =
@@ -55,16 +72,11 @@ const Navbar = ({className, selectedModes, setSelectedModes, selectedCustomer, s
   // const [projectDetails, setProjectDetails] = useState(null);
   const [uniqueVariables, setUniqueVariables] = useState([]);
   const [mkclTables, setMkclTables] = useState([]);
-  const [selectedMkclTables, setSelectedMkclTables] = useState([]);
+ 
+  //const [selectedMkclTable, setSelectedMkclTable] = useState("");
   const[isEditModalOpen,setEditModalOpen] = useState(false);
  
-const toggleSelectiontable = (tableName) => {
-    setSelectedMkclTables((prev) =>
-      prev.includes(tableName)
-        ? prev.filter((t) => t !== tableName)
-        : [...prev, tableName]
-    );
-  };
+
   
 const handleLogout = () => {
     ["token", "user", "projectId", "projectName"].forEach(item => localStorage.removeItem(item));
@@ -131,6 +143,11 @@ const handleCustomerChange = (event) => {
     setSelectedModes([]);
     console.log("Selected customer:",selectedCustomer);
 };
+const handleMkclChange=(event)=>{
+  event.preventDefault();
+  setSelectedMkclTable(event.target.value);
+  console.log(event.target.value);
+}
 useEffect(() => {
   if (selectedCustomer) {
     fetchCustomerById(selectedCustomer); // Fetch customer details
@@ -210,7 +227,7 @@ const fetchTables = async () => {
 try {
   const data = await fetchSettings(selectedCustomer);
   setMkclTables(data);
-  setSelectedMkclTables([]); // Reset selection on customer change
+// Reset selection on customer change
 } catch (error) {
   console.error("Error fetching MKCL tables:", error);
 }
@@ -285,23 +302,22 @@ try {
       {/* Bottom Section: Mode, MKCL Tables & Value Selection */}
       <div className="navbar-bottom">
 
-        {/* MKCL Table Selection */}
-        <div className="mkcl-section">
+      <div className="mkcl-section">
           <h3>MCLK TABLES:</h3>
-          <div className="radio-container">
+          
+         <select
+            className="nav-select"
+            value={selectedMkclTable}
+            onChange={handleMkclChange}
+          >
+            <option value="">Select MKCL Table</option>
             {mkclTables.map((table) => (
-              <label key={table.table_name} className="radio-label">
-                <input
-                  type="checkbox"
-                  value={table.table_name}
-                  checked={selectedMkclTables.includes(table)}
-                  onChange={() => toggleSelectiontable(table)}
-                />
+              <option key={table.id} value={table.id}>
                 {table.name}
-              </label>
+              </option>
             ))}
+          </select>
           </div>
-        </div>
 
         {/* Mode Selection */}
         <div className="mode-section">
@@ -323,7 +339,7 @@ try {
         
         
       </div>
-
+    
     </nav>
   );
 };

@@ -3,7 +3,7 @@ import { fetchCustomers ,fetchProjectById,fetchModes,fetchSettings,fetchSetFiles
 import "../styles/FileList.css";
 
 
-const FileList = ({selectedSetFiles,setSelectedSetFiles}) => {
+const FileList = ({selectedSetFiles,setSelectedSetFiles,selectedMkclTableFromClone,setSelectedMkclTableFromClone}) => {
   const [fileData, setFileData] = useState([]); // Store all setfiles across modes
   const [selectedModes, setSelectedModes] = useState(null);
   const [modes, setModes] = useState([]);
@@ -11,12 +11,18 @@ const FileList = ({selectedSetFiles,setSelectedSetFiles}) => {
   const [selectedCustomer, setSelectedCustomer] = useState("");
   const [customers, setCustomers] = useState([]);
   const [mkclTables, setMkclTables] = useState([]);
- const [selectedMkclTables, setSelectedMkclTables] = useState([]);
+  const [SelectedMkclTableKey,setSelectedMkclTableKey]=useState("")
+ //const [selectedMkclTables, setSelectedMkclTables] = useState([]);
  const projectId = localStorage.getItem("projectId");
  useEffect(() => {
     const fetchData = async () => {
+      if (selectedModes==null||SelectedMkclTableKey=="") {
+        setFileData([]);
+        setSelectedSetFiles({});
+        return;
+      }
       const newFileData = [];
-      const data = await fetchSetFilesbyMode(selectedModes);
+      const data = await fetchSetFilesbyMode(selectedModes,SelectedMkclTableKey);
       if (data.files) {
         newFileData.push({ selectedModes, files: data.files });
       }
@@ -38,7 +44,7 @@ const FileList = ({selectedSetFiles,setSelectedSetFiles}) => {
     };
 
     fetchData();
-  }, [selectedModes, setSelectedSetFiles]);
+  }, [selectedModes, setSelectedSetFiles,SelectedMkclTableKey]);
 
   const handleCheckboxChange = (file) => {
     setSelectedSetFiles({}); // Clear previously selected files
@@ -58,8 +64,18 @@ const FileList = ({selectedSetFiles,setSelectedSetFiles}) => {
     const selectedId = event.target.value;
     setSelectedCustomer(selectedId);
     setSelectedModes("");
-    setSelectedMkclTables("");
+    setSelectedMkclTableFromClone("");
   };
+  const handleMkclChange=(event)=>{
+    const selectedname=event.target.value;
+   // console.log(selectedname);
+    setSelectedMkclTableFromClone(selectedname);
+    if(selectedname){
+    const selectedTable = mkclTables.find((table) => table.table_name == selectedname);
+   // console.log("ziuuu",selectedTable)
+    setSelectedMkclTableKey(selectedTable.id);
+    }
+  }
   
   useEffect(() => {
     if (projectId) {
@@ -94,7 +110,7 @@ const FileList = ({selectedSetFiles,setSelectedSetFiles}) => {
             ))}
           </select>
           
-          <select className="create-new-setfile-select" value={selectedMkclTables} onChange={(e) => setSelectedMkclTables(e.target.value)}>
+          <select className="create-new-setfile-select" value={selectedMkclTableFromClone} onChange={handleMkclChange}>
             <option value="">Select MCLK Table</option>
             {mkclTables.map((table) => (
               <option key={table.table_name} value={table.table_name}>{table.name}</option>
@@ -126,7 +142,7 @@ const FileList = ({selectedSetFiles,setSelectedSetFiles}) => {
           ))}
         </ul>
       ))}
-        
+        {/* <div>{selectedMkclTableFromClone}</div> */}
     </div>
   );
 };
