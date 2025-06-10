@@ -10,6 +10,8 @@ const modeRoutes = require("./routes/modeRoutes");
 const settingRoutes = require("./routes/settingRoutes");
 const setfileRoutes = require("./routes/setfileRoutes");
 
+const customerUploadRoutes = require("./routes/customerUploadRoutes");
+
 dotenv.config();
 const app = express();
 
@@ -27,5 +29,8 @@ app.use("/customers", customerRoutes);
 app.use("/modes", modeRoutes);
 app.use("/settings", settingRoutes);
 app.use("/setfile", setfileRoutes);
+
+app.use("/upload-customer", customerUploadRoutes);
+
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

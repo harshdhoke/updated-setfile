@@ -406,3 +406,13 @@ export const fetchTableDataFornew = async (tableName) => {
     throw error;
   }
 };
+
+// Upload customer data
+export const uploadCustomer = async (payload) => {
+  try {
+    const response = await axios.post(`${API_BASE_URL}/api/upload-customer`, payload, getAuthHeaders());
+    return response.data;
+  } catch (error) {
+    throw error.response?.data?.message || "Failed to upload customer data.";
+  }
+};

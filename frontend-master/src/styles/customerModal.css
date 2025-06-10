@@ -1,0 +1,73 @@
+/* Modal Overlay */
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 999;
+    backdrop-filter: blur(2px);
+  }
+  
+  /* Modal Content */
+  .modal-content {
+    background-color: #ffffff;
+    padding: 25px 30px;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 500px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+    text-align: center;
+    position: relative;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+  
+  /* Buttons */
+  .button-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .add-customer-btn,
+  .upload-customer-btn,
+  .close-btn {
+    margin: 10px;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    width: 100%;
+    max-width: 200px;
+  }
+  
+  .add-customer-btn {
+    background-color: #007bff;
+    color: #fff;
+  }
+  
+  .upload-customer-btn {
+    background-color: #28a745;
+    color: #fff;
+  }
+  
+  .close-btn {
+    background-color: #dc3545;
+    color: #fff;
+  }
+  
+  /* Hover and Focus Effects */
+  .add-customer-btn:hover,
+  .upload-customer-btn:hover,
+  .close-btn:hover {
+    opacity: 0.8;
+  }
+  
+  .add-customer-btn:focus,
+  .upload-customer-btn:focus,
+  .close-btn:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px #fff, 0 0 0 4px #007bff;
+  }

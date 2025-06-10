@@ -10,7 +10,7 @@ import {
   fetchSettings,
   getCustomerById,
 } from "../services/api";
-import AddCustomerModal from "./AddCustomerModal";
+import CustomerModal from "./customerModal";
 import AddModeModal from "./AddModeModal";
 import AddMkclTableModal from "./AddMkclTableModal";
 
@@ -78,6 +78,8 @@ const CreateNewSetfileNavbar = ({style, setfilePrefix ,setSetfilePrefix,generate
   const [setfileSuffix, setSetfileSuffix] = useState("");
   const [fps, setFps] = useState("");
   const [resolution, setResolution] = useState("");
+
+  const [loading, setLoading] = useState(false);
   
   const handleLogout = () => {
     ["token", "user", "projectId", "projectName"].forEach((item) =>
@@ -237,12 +239,14 @@ useEffect(() => {
           </select>
 
           <button className="create-new-setfile-btn" onClick={() => setModalOpen(true)}>Add Customer</button>
-          <AddCustomerModal
+          <CustomerModal
             isOpen={isModalOpen}
             onClose={() => {
               setModalOpen(false);
-              fetchCustomersList(projectId);
+              // fetchCustomersList(projectId);
             }}
+            loading={loading}
+            setLoading={setLoading}
           />
 
           {/* <button className="create-new-setfile-btn">Edit</button>
