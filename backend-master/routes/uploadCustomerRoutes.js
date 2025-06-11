@@ -4,6 +4,7 @@ const authMiddleware = require("../middlewares/authMiddleware");
 
 const router = express.Router();
 
+
 // Add a new customer under a project
 router.post("/", authMiddleware, uploadCustomerData);
 

@@ -408,12 +408,12 @@ export const fetchTableDataFornew = async (tableName) => {
 };
 
 // Upload customer data
-export const uploadCusData = async (parsedFilesJson,modesJson,mvIndicesJson,prefixMapJson,endNamesJson,projectName, Customertocreate,customertoUpload,interfaceType,projectId) => {
+export const uploadCusData = async (formData) => {
 //  console.log("tableName:", tableName);
   try {
     const response = await axios.post(
-      `${API_BASE_URL}/uploadCus`,
-      { parsedFilesJson,modesJson,mvIndicesJson,prefixMapJson,endNamesJson,projectName, Customertocreate,customertoUpload,interfaceType,projectId }, // Send as request body
+      `${API_BASE_URL}/uploadCus/`,
+      formData, // Send as request body
       {
         headers: { ...getAuthHeaders().headers }, // Include authentication headers
       }

@@ -9,6 +9,7 @@ const pathd="C:\\Program Files\\MySQL\\MySQL Server 8.0\\bin\\mysqldump.exe"
 const DB_NAME = "my_db";
 const DB_USER = "root";
 const DB_PASS = "Harsh@123";
+
 const mergedGroups = [/* ... your MV4 and MV6 strings ... */
     "//$MV4[MCLK:[*MCLK*],mipi_phy_type:[*PHY_TYPE*],mipi_lane:[*PHY_LANE*],mipi_datarate:[*MIPI_DATA_RATE*]]",
     "//$MV4_Sensor[fps:[*FPS*]]",
@@ -106,9 +107,26 @@ const commitAndPushToGit = () => {
 exports.uploadCustomerData = async (req, res) => {
   const connection = await pool.getConnection();
   try {
-    const {parsedFilesJson,modesJson,mvIndicesJson,prefixMapJson,endNamesJson,projectName, Customertocreate,customertoUpload,interfaceType,projectId } = req.body;
-    const modes= JSON.parse(parsedFilesJson);
-    console.log(modes[0][value])
+    const {customerToCreate,
+        customerToUpload,
+        interfaceType,
+        clockRate,
+        addModes,
+        projectId} = req.body;
+
+    const files = req.files;
+
+    if (req.files) { 
+
+      for(let [key, value] of Object.entries(req.files)) {
+        console.log(value.data.toString('utf-8'));
+      }
+    } else {
+      return res.status(400).json({ message: "No filea uploaded" });
+    }
+
+    // const modes= JSON.parse(parsedFilesJson);
+    // console.log(modes[0][value])
     // Object.entries(modes).forEach(({key,value})=>{
     //   console.log(key);
     //   console.log(value)
@@ -134,7 +152,7 @@ exports.uploadCustomerData = async (req, res) => {
     // await connection.commit();
    
     res.json({
-      message: " uploaded successfully",
+      message: "uploaded successfully",
     });
 
   } catch (err) {
