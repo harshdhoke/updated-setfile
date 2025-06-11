@@ -9,8 +9,7 @@ const customerRoutes = require("./routes/customerRoutes");
 const modeRoutes = require("./routes/modeRoutes");
 const settingRoutes = require("./routes/settingRoutes");
 const setfileRoutes = require("./routes/setfileRoutes");
-
-const customerUploadRoutes = require("./routes/customerUploadRoutes");
+const uploadCustomerRoutes = require("./routes/uploadCustomerRoutes");
 
 dotenv.config();
 const app = express();
@@ -21,7 +20,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(fileUpload());
 
 // Serve uploaded files statically
-app.use("/uploads", express.static("C:\\Users\\ziya.rk\\Desktop\\remap"));
+app.use("/uploads", express.static("D:\\Regmap"));
 
 app.use("/auth", authRoutes);
 app.use("/projects", projectRoutes);
@@ -29,8 +28,9 @@ app.use("/customers", customerRoutes);
 app.use("/modes", modeRoutes);
 app.use("/settings", settingRoutes);
 app.use("/setfile", setfileRoutes);
+app.use("/uploadCus", uploadCustomerRoutes);
 
-app.use("/upload-customer", customerUploadRoutes);
+
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

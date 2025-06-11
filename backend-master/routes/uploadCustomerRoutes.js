@@ -1,9 +1,10 @@
-// routes/customer.js
 const express = require("express");
-const router = express.Router();
-const customerController = require("../controller/customer"); // Import controller
+const { uploadCustomerData} = require("../controllers/uploadCustomerController");
+const authMiddleware = require("../middlewares/authMiddleware");
 
-// POST /upload-customer
-router.post("/", customerController.uploadCustomer);
+const router = express.Router();
+
+// Add a new customer under a project
+router.post("/", authMiddleware, uploadCustomerData);
 
 module.exports = router;
